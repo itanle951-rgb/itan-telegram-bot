@@ -119,6 +119,40 @@ Chủ tịch muốn duyệt kịch bản nào trước để Zelly và Itan lậ
 • **Thiết bị Panasonic / Sino / Schneider:** Chiết khấu **38% - 48%** cho thợ thầu công trình.
 • **Chính sách hỗ trợ:** Miễn phí giao hàng tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn!"""
 
+    # 4. Lệnh 1-chạm: Kéo Traffic Thực Chiến
+    if "traffic" in lower_text or "!traffic" in lower_text or "hút khách" in lower_text:
+        return """🚀 **CỖ MÁY SẢN XUẤT TRAFFIC TỰ ĐỘNG - ZELLY × TENT × MV**
+
+Kính thưa **Chủ tịch Lê Minh Tân**,
+Hệ thống đã chuẩn bị sẵn **3 Chiến dịch Kéo Traffic Thực Chiến** để Chủ tịch Copy & Đăng ngay:
+
+---
+🔥 **CHIẾN DỊCH 1: HÚT KHÁCH SỈ VẬN CHUYỂN 1688 (FB / ZALO / THREADS)**
+*(Copy đăng lên 2 hội nhóm: 'Hội Buôn Hàng 1688 Quảng Châu', 'Nguồn Hàng Kinh Doanh Online')*
+
+"🚨 **CẢNH BÁO BÁC NÀO ĐANG NHẬP HÀNG 1688 QUA TRUNG GIAN BỊ MẤT THÊM 20-30% PHÍ!**
+70% shop trên 1688 là dân buôn thương mại F1, F2. Muốn tìm tận xưởng sản xuất phải lọc đúng biểu tượng 'ĐẦU TRÂU' (实力商家) + tỷ lệ khách quay lại > 30%!
+Hoàng Thịnh Logistics hỗ trợ anh em đàm phán trực tiếp với chủ xưởng, vận chuyển chính ngạch có hóa đơn VAT & C/O Form E chỉ 3-5 ngày về kho Hà Nội (19/785 Nguyễn Khoái).
+👉 Bác nào cần bảng mã HS Code & danh bạ 50 xưởng gốc, nhắn Zalo em gửi tặng: 0968.599.951!"
+
+---
+⚡ **CHIẾN DỊCH 2: HÚT THỢ THẦU ĐIỆN BẮC NINH (TẠO DÒNG TIỀN TRONG 24H)**
+*(Gửi trực tiếp cho 5 thợ điện hoặc đăng nhóm 'Hội Thợ Điện Nước Bắc Ninh')*
+
+"Kính gửi các bác thợ thầu công trình Bắc Ninh! Tổng Kho Điện Duy Phong (549 Ngô Gia Tự, TP. Bắc Ninh) đang có chính sách trợ giá cuối năm:
+• Dây Cadisun chiết khấu 30% - 35%
+• Dây Trần Phú chính hãng chiết khấu 20% - 25%
+• Thiết bị Sino, Panasonic chiết khấu 38% - 48%
+Chở miễn phí tận chân công trình TP. Bắc Ninh, KCN Quế Võ, Yên Phong! Gửi bản vẽ bóc tách qua Zalo: 0904.511.227 nhận báo giá sau 30 phút!"
+
+---
+🎬 **CHIẾN DỊCH 3: VIDEO TIKTOK VIRAL 22s (SĂN HÀNG 1689.VN)**
+• **Hook 0-3s:** Cầm đồ gia dụng: *"Đừng dại mua món này ở siêu thị 600 cành nếu chưa biết điều này!"*
+• **3-15s:** Quay app 1688 giá xưởng 95k + mở web 1689.vn bóc giá vốn.
+• **15-22s:** *"Link săn mã giảm giá và kho xưởng em để ở đầu trang bio, bấm vào giỏ hàng ngay nhé!"*
+
+Chủ tịch đăng bài nào trước trong hôm nay ạ?"""
+
     # 4. Xử lý hội thoại tự nhiên với Gemini 2.5 Flash
     client = get_gemini_client()
     if client:
