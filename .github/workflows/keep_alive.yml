@@ -1,0 +1,22 @@
+name: 24-7 Zero Cold-Start Pinger
+
+on:
+  schedule:
+    # Chạy tự động mỗi 12 phút để đánh thức Render Cloud không bao giờ ngủ
+    - cron: '*/12 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Telegram Bot Endpoint
+        run: |
+          echo "Bắt đầu gửi xung kích hoạt Zero Cold-Start tới Render Cloud..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://itan-telegram-bot.onrender.com/ping)
+          echo "Render Ping HTTP Status: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "✅ THÀNH CÔNG: Máy chủ Render của Chủ tịch Lê Minh Tân đang TỈNH THỨC 100%!"
+          else
+            echo "⚠️ CẢNH BÁO: Mã phản hồi $STATUS"
+          fi
