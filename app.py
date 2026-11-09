@@ -245,9 +245,153 @@ Chủ tịch đăng bài nào trước trong hôm nay ạ?"""
 
     return f"Dạ em chào Chủ tịch Tân! Em đã ghi nhận yêu cầu: '{user_text}'. Em Vi và các Sub-Agents đang kiểm tra số liệu kho và sẽ báo cáo Chủ tịch ngay ạ!"
 
+GITHUB_TOKEN = os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
+
 # ==============================================================================
-# BỘ CÔNG CỤ TẠO ẢNH LUXURY BLACK & GOLD (ZERO-COST AI CLOUD & PILLOW FALLBACK)
+# QUY TRÌNH TỰ ĐỘNG VIẾT BÀI - TẠO ẢNH - ĐĂNG LÊN WEBSITE (AUTO-PUBLISHER)
 # ==============================================================================
+def create_slug_url(text: str) -> str:
+    import re
+    text = text.lower()
+    text = re.sub(r'[àáạảãâầấậẩẫăằắặẳẵ]', 'a', text)
+    text = re.sub(r'[èéẹẻẽêềếệểễ]', 'e', text)
+    text = re.sub(r'[ìíịỉĩ]', 'i', text)
+    text = re.sub(r'[òóọỏõôồốộổỗơờớợởỡ]', 'o', text)
+    text = re.sub(r'[ùúụủũưừứựửữ]', 'u', text)
+    text = re.sub(r'[ỳýỵỷỹ]', 'y', text)
+    text = re.sub(r'đ', 'd', text)
+    text = re.sub(r'[^a-z0-9\s-]', '', text)
+    text = re.sub(r'[\s-]+', '-', text).strip('-')
+    return text[:60]
+
+def auto_publish_workflow_sync(topic: str, website: str = "bacninh") -> dict:
+    """Tự viết bài SEO bằng Gemini AI, tạo ảnh Luxury, cập nhật GitHub Pages và trả kết quả."""
+    import base64
+    import requests
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    
+    if website in ["bacninh", "thietbidien-bacninh"]:
+        site_name = "Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh"
+        site_url = "https://thietbidien-bacninh.com"
+        repo_name = "thietbidien-bacninh"
+        prompt_ctx = "Website Thiết bị điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú, Panasonic."
+    else:
+        site_name = "Hoàng Thịnh Logistics"
+        site_url = "https://itanle951-rgb.github.io/hoangthinh-logistics"
+        repo_name = "hoangthinh-logistics"
+        prompt_ctx = "Hoàng Thịnh Logistics (Kho 19/785 Nguyễn Khoái, Hoàng Mai, Hà Nội. Hotline: 0968 599 951). Chuyên vận chuyển 1688, Taobao chính ngạch."
+
+    # 1. Viết bài với Gemini AI
+    article = None
+    system_inst = f"""
+    Bạn là Kỹ sư Trưởng & Chuyên gia Content SEO. Ngữ cảnh: {prompt_ctx}
+    Viết 1 bài viết chuẩn SEO chuyên sâu, trả về JSON chuẩn:
+    {{
+      "title": "Tiêu đề chuẩn SEO hấp dẫn dài 60-80 ký tự",
+      "category": "Tên chuyên mục",
+      "summary": "Đoạn sapo lôi cuốn 2-3 câu",
+      "content_html": "Nội dung chi tiết thẻ HTML <h3>, <p>, <ul>, <li>, <strong>, bảng thông số, lời khuyên thực tế và kết bài liên hệ Hotline",
+      "image_prompt": "Prompt tiếng Anh chi tiết để tạo ảnh Luxury Black and Gold cho bài viết này"
+    }}
+    """
+    for m in ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash-lite']:
+        try:
+            resp = client.models.generate_content(
+                model=m,
+                contents=f"{system_inst}\n\nChủ đề bài viết: {topic}",
+                config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.7)
+            )
+            article = json.loads(resp.text)
+            break
+        except Exception as e:
+            logger.warning(f"Model {m} error: {e}")
+
+    if not article:
+        article = {
+            "title": f"Cẩm nang kiến thức chuyên sâu: {topic}",
+            "category": "Kinh Nghiệm Thực Tế",
+            "summary": f"Hướng dẫn và phân tích chi tiết về {topic} giúp tiết kiệm chi phí và đảm bảo an toàn tuyệt đối.",
+            "content_html": f"<h3>1. Giới thiệu về {topic}</h3><p>Nắm vững giải pháp về {topic} mang lại giá trị to lớn cho công trình.</p><h3>2. Lời khuyên</h3><p>Luôn lựa chọn sản phẩm chính hãng có nguồn gốc minh bạch.</p>",
+            "image_prompt": f"Luxury black and gold illustration of {topic}, cinematic 8k"
+        }
+
+    # 2. Tạo ảnh Luxury
+    slug = create_slug_url(article["title"])
+    os.makedirs("/tmp/web_images", exist_ok=True)
+    img_path = f"/tmp/web_images/{slug}.jpg"
+    create_luxury_graphic_banner(article["title"], topic, img_path)
+
+    # 3. Đẩy lên GitHub để Website live
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "User-Agent": "Antigravity-Publisher",
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+    }
+    owner = "itanle951-rgb"
+
+    # Đẩy ảnh lên GitHub
+    with open(img_path, "rb") as f:
+        img_b64 = base64.b64encode(f.read()).decode("utf-8")
+    
+    img_repo_path = f"assets/images/{slug}.jpg"
+    put_img_payload = {
+        "message": f"Auto-Publish Image: {slug}",
+        "content": img_b64,
+        "branch": "main"
+    }
+    try:
+        # Kiểm tra SHA ảnh nếu có
+        res_sha = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/contents/{img_repo_path}", headers=headers)
+        if res_sha.status_code == 200:
+            put_img_payload["sha"] = res_sha.json().get("sha")
+        requests.put(f"https://api.github.com/repos/{owner}/{repo_name}/contents/{img_repo_path}", json=put_img_payload, headers=headers, timeout=15)
+    except Exception as e:
+        logger.warning(f"Lỗi đẩy ảnh lên GitHub: {e}")
+
+    # Cập nhật mã nguồn bài viết (app.js cho web Bắc Ninh)
+    if website in ["bacninh", "thietbidien-bacninh"]:
+        try:
+            get_js = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/contents/js/app.js", headers=headers)
+            if get_js.status_code == 200:
+                js_data = get_js.json()
+                cur_js = base64.b64decode(js_data["content"]).decode("utf-8")
+                today_str = time.strftime("%d/%m/%Y")
+                new_item = {
+                    "id": f"art-{int(time.time())}",
+                    "title": article["title"],
+                    "category": article["category"],
+                    "author": "A Thành BN",
+                    "createdAt": today_str,
+                    "summary": article["summary"],
+                    "image": img_repo_path,
+                    "content": article["content_html"]
+                }
+                pattern = r"(const\s+ALL_SEO_ARTICLES\s*=\s*\[)"
+                new_js = re.sub(pattern, r"\1\n        " + json.dumps(new_item, ensure_ascii=False, indent=8) + ",\n", cur_js, count=1)
+                new_js_b64 = base64.b64encode(new_js.encode("utf-8")).decode("utf-8")
+                
+                put_js = {
+                    "message": f"Auto-Publish Article: {article['title']}",
+                    "content": new_js_b64,
+                    "sha": js_data["sha"],
+                    "branch": "main"
+                }
+                requests.put(f"https://api.github.com/repos/{owner}/{repo_name}/contents/js/app.js", json=put_js, headers=headers, timeout=15)
+                logger.info(f"✓ Đã push bài viết mới '{article['title']}' lên {repo_name} thành công!")
+        except Exception as e:
+            logger.error(f"Lỗi cập nhật app.js trên GitHub: {e}")
+
+    return {
+        "article": article,
+        "img_path": img_path,
+        "site_name": site_name,
+        "site_url": site_url,
+        "slug": slug
+    }
 def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
     """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) sắc nét."""
     try:
@@ -365,7 +509,8 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược dòng tiền.\n"
             "• Gõ **`traffic`**: Xuất 3 chiến dịch kéo traffic đa kênh tức thì.\n"
             "• Gõ **`boq`**: Tra cứu chiết khấu vật tư điện Duy Phong Bắc Ninh.\n"
-            "• Gõ **`/image <mô tả>`**: Tạo ảnh AI Luxury Black & Gold tức thì.\n\n"
+            "• Gõ **`/image <mô tả>`**: Tạo ảnh AI Luxury Black & Gold tức thì.\n"
+            "• Gõ **`/publish <chủ đề>`** (hoặc `đăng bài: <chủ đề> | web: <tên>`): Tự động viết bài chuẩn SEO, tạo ảnh và đăng thẳng lên Website!\n\n"
             "Chủ tịch có thể tắt máy tính đi ngủ, bot vẫn luôn túc trực trên điện thoại của anh 24/24!"
         )
     else:
@@ -418,6 +563,63 @@ async def handle_image_command(update: Update, context: ContextTypes.DEFAULT_TYP
         prompt = "Container Hoang Thinh Logistics cap ben kho Ha Noi"
     await handle_image_generation(update, prompt)
 
+async def handle_publish_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
+    user = update.effective_user
+    if not is_admin(user.id):
+        await update.message.reply_text("🔒 *Chức năng xuất bản website tự động chỉ dành cho Chủ tịch Lê Minh Tân.*", parse_mode="Markdown")
+        return
+    raw_text = " ".join(context.args) if context.args else ""
+    website = "bacninh"
+    topic = raw_text
+    if "web:" in raw_text.lower():
+        parts = raw_text.split("web:")
+        topic = parts[0].replace("chủ đề:", "").replace("chude:", "").strip()
+        website = parts[1].strip().split()[0].lower()
+    elif "logistics" in raw_text.lower() or "1688" in raw_text.lower():
+        website = "logistics"
+
+    if not topic:
+        topic = "Kinh nghiệm chọn thiết bị điện cao cấp cho biệt thự và nhà phố"
+
+    status_msg = await update.message.reply_text(
+        f"🚀 *Chủ tịch đã ra lệnh xuất bản! Hội đồng Zelly × Itan đang tự động:*\n"
+        f"1. Viết bài chuẩn SEO bằng Gemini AI\n"
+        f"2. Tạo ảnh nhận diện Luxury Black & Gold\n"
+        f"3. Cập nhật mã nguồn & đẩy thẳng lên GitHub Pages (`{website}`)...\n\n"
+        f"⏳ *Vui lòng đợi khoảng 15-20 giây...*",
+        parse_mode="Markdown"
+    )
+    await update.message.chat.send_action("upload_photo")
+
+    loop = asyncio.get_running_loop()
+    res = await loop.run_in_executor(None, auto_publish_workflow_sync, topic, website)
+
+    art = res["article"]
+    caption = (
+        f"🚀 **ĐÃ TỰ ĐỘNG VIẾT BÀI & ĐĂNG LÊN WEBSITE THÀNH CÔNG!**\n\n"
+        f"🌐 **Website:** {res['site_name']}\n"
+        f"🔗 **Link xem:** {res['site_url']}\n"
+        f"📰 **Tiêu đề:** {art['title']}\n"
+        f"🏷️ **Chuyên mục:** {art['category']}\n"
+        f"📝 **Tóm tắt:** {art['summary']}\n\n"
+        f"⚡ **GỢI Ý HÀNH ĐỘNG TIẾP THEO CHO CHỦ TỊCH:**\n"
+        f"• Link bài viết đã online trên GitHub Pages, Chủ tịch có thể chia sẻ lên Zalo/Facebook để kéo khách!\n"
+        f"• Gõ `!traffic` để xuất thêm 3 kịch bản video TikTok tương ứng."
+    )
+
+    try:
+        with open(res["img_path"], "rb") as photo_file:
+            await update.message.reply_photo(photo=photo_file, caption=caption, parse_mode="Markdown")
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"Lỗi gửi thông báo xuất bản: {e}")
+        await update.message.reply_text(caption, parse_mode="Markdown")
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
         return
@@ -466,6 +668,62 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await handle_image_generation(update, prompt)
             return
 
+        # ADMIN: Kiểm tra lệnh tự động viết bài và đăng website
+        if any(lower_text.startswith(prefix) for prefix in ["đăng bài", "dang bai", "viết bài", "viet bai", "xuất bản", "xuat ban", "đăng web", "dang web"]):
+            topic_str = user_text
+            for prefix in ["đăng bài:", "dang bai:", "đăng bài", "dang bai", "viết bài:", "viet bai:", "viết bài", "viet bai", "xuất bản:", "xuat ban:", "đăng web:", "dang web:"]:
+                if lower_text.startswith(prefix):
+                    topic_str = user_text[len(prefix):].strip()
+                    break
+            website = "bacninh"
+            if "|" in topic_str:
+                parts = topic_str.split("|")
+                topic_str = parts[0].strip()
+                if "web:" in parts[1].lower():
+                    website = parts[1].lower().split("web:")[1].strip()
+            elif "web:" in topic_str.lower():
+                parts = topic_str.split("web:")
+                topic_str = parts[0].strip()
+                website = parts[1].strip().split()[0].lower()
+            elif "logistics" in topic_str.lower() or "1688" in topic_str.lower() or "quảng châu" in topic_str.lower():
+                website = "logistics"
+            
+            if not topic_str:
+                topic_str = "Kinh nghiệm chọn thiết bị điện cao cấp cho biệt thự và nhà phố"
+
+            status_msg = await update.message.reply_text(
+                f"🚀 *Nhận lệnh Chủ tịch! Hội đồng Zelly × Itan đang tự động:*\n"
+                f"1. Viết bài chuyên sâu chuẩn SEO bằng Gemini AI\n"
+                f"2. Tạo ảnh nhận diện Luxury Black & Gold\n"
+                f"3. Cập nhật mã nguồn & push thẳng lên GitHub Pages (`{website}`)...\n\n"
+                f"⏳ *Vui lòng đợi khoảng 15-20 giây...*",
+                parse_mode="Markdown"
+            )
+            await update.message.chat.send_action("upload_photo")
+            loop = asyncio.get_running_loop()
+            res = await loop.run_in_executor(None, auto_publish_workflow_sync, topic_str, website)
+            art = res["article"]
+            caption = (
+                f"🚀 **ĐÃ TỰ ĐỘNG VIẾT BÀI & ĐĂNG LÊN WEBSITE THÀNH CÔNG!**\n\n"
+                f"🌐 **Website:** {res['site_name']}\n"
+                f"🔗 **Link xem:** {res['site_url']}\n"
+                f"📰 **Tiêu đề:** {art['title']}\n"
+                f"🏷️ **Chuyên mục:** {art['category']}\n"
+                f"📝 **Tóm tắt:** {art['summary']}\n\n"
+                f"⚡ *Link bài viết đã cập nhật trực tiếp trên website. Chủ tịch có thể gửi ngay cho đối tác/thợ thầu!*"
+            )
+            try:
+                with open(res["img_path"], "rb") as photo_file:
+                    await update.message.reply_photo(photo=photo_file, caption=caption, parse_mode="Markdown")
+                try:
+                    await status_msg.delete()
+                except Exception:
+                    pass
+            except Exception as e:
+                logger.error(f"Lỗi gửi thông báo xuất bản: {e}")
+                await update.message.reply_text(caption, parse_mode="Markdown")
+            return
+
         # ADMIN: Toàn quyền truy cập phản hồi hệ thống
         await update.message.chat.send_action("typing")
         reply_text = generate_ai_response(user_text, user.first_name)
@@ -506,6 +764,8 @@ async def run_telegram_bot():
     bot_application.add_handler(CommandHandler("report", handle_message))
     bot_application.add_handler(CommandHandler("image", handle_image_command))
     bot_application.add_handler(CommandHandler("draw", handle_image_command))
+    bot_application.add_handler(CommandHandler("publish", handle_publish_command))
+    bot_application.add_handler(CommandHandler("post", handle_publish_command))
     bot_application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     await bot_application.initialize()
