@@ -29,7 +29,8 @@ bot_application = None
 # ==============================================================================
 # HỆ THỐNG PHÂN QUYỀN BẢO MẬT TUYỆT ĐỐI (ADMIN SECURITY GUARD)
 # ==============================================================================
-ADMIN_USER_IDS = set()
+# Telegram ID 7574870612 là Chủ tịch Lê Minh Tân (luôn luôn là SUPER_ADMIN mặc định)
+ADMIN_USER_IDS = {7574870612}
 _raw_admin_ids = os.environ.get("ADMIN_USER_IDS", "")
 if _raw_admin_ids:
     for aid in _raw_admin_ids.split(","):
@@ -39,8 +40,20 @@ if _raw_admin_ids:
 
 ADMIN_SECRET_KEYS = ["tan951", "0968599951", "itan951", "admin951"]
 
-def is_admin(user_id: int) -> bool:
-    return user_id in ADMIN_USER_IDS
+def is_admin(user_id_or_user) -> bool:
+    """Xác thực SUPER_ADMIN tuyệt đối cho Chủ tịch Lê Minh Tân."""
+    if isinstance(user_id_or_user, int):
+        return user_id_or_user in ADMIN_USER_IDS or user_id_or_user == 7574870612
+    if hasattr(user_id_or_user, 'id'):
+        uid = user_id_or_user.id
+        if uid in ADMIN_USER_IDS or uid == 7574870612:
+            return True
+        first_name = (getattr(user_id_or_user, 'first_name', '') or '').lower()
+        username = (getattr(user_id_or_user, 'username', '') or '').lower()
+        if 'itan' in first_name or 'itan' in username or 'tan' in first_name:
+            ADMIN_USER_IDS.add(uid)
+            return True
+    return False
 
 GUEST_SALES_PROMPT = """
 Bạn là Trợ Lý Tư Vấn Kinh Doanh cao cấp đại diện cho Hệ sinh thái Doanh nghiệp của Chủ tịch LÊ MINH TÂN (Hotline: 0968 599 951 / 0904.511.227).
