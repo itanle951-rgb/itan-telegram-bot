@@ -182,6 +182,111 @@ Chủ tịch đăng bài nào trước trong hôm nay ạ?"""
     return f"Dạ em chào Chủ tịch Tân! Em đã ghi nhận yêu cầu: '{user_text}'. Em Vi và các Sub-Agents đang kiểm tra số liệu kho và sẽ báo cáo Chủ tịch ngay ạ!"
 
 # ==============================================================================
+# BỘ CÔNG CỤ TẠO ẢNH LUXURY BLACK & GOLD (ZERO-COST AI CLOUD & PILLOW FALLBACK)
+# ==============================================================================
+def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
+    """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) sắc nét."""
+    try:
+        from PIL import Image, ImageDraw
+        width, height = 1080, 1080
+        image = Image.new("RGB", (width, height), color="#0B0F17")
+        draw = ImageDraw.Draw(image)
+        gold = (212, 175, 55)
+        gold_light = (243, 229, 171)
+        card_bg = (22, 31, 48)
+
+        # Viền đôi hoàng gia
+        draw.rounded_rectangle([40, 40, width - 40, height - 40], radius=24, fill=card_bg, outline=gold, width=4)
+        draw.rounded_rectangle([52, 52, width - 52, height - 52], radius=16, outline=(60, 50, 20), width=1)
+
+        # Thanh tiêu đề đen bóng
+        draw.rectangle([44, 44, width - 44, 180], fill=(15, 20, 32))
+        draw.line([(44, 180), (width - 44, 180)], fill=gold, width=2)
+
+        draw.text((80, 70), "👑 BỘ ĐÔI CHỈ HUY ZELLY × ITAN", fill=gold_light)
+        draw.text((80, 110), "HỆ THỐNG TÁC TỬ TỰ HÀNH & ĐIỀU PHỐI WORKFLOW 24/7", fill=(148, 163, 184))
+
+        # Tiêu đề chính
+        draw.text((80, 240), title[:40], fill=(248, 250, 252))
+        draw.text((80, 290), title[40:80] if len(title) > 40 else "", fill=(248, 250, 252))
+
+        # Nội dung chi tiết
+        y = 380
+        details = [
+            f"• Đề tài: {subtitle}",
+            "• Hệ sinh thái: Hoàng Thịnh Logistics | Điện Duy Phong | Sàn 1689.vn",
+            "• Chuẩn nhận diện: Luxury Obsidian Black & Royal Gold (#D4AF37)",
+            "• Mục tiêu cốt lõi: Bảo toàn vốn, tối ưu ROI, xóa nợ 500k Google One",
+            "• Hotline Chủ tịch Tân: 0968 599 951 / 0826.828.131",
+        ]
+        for line in details:
+            draw.text((80, y), line, fill=(203, 213, 225))
+            y += 65
+
+        # Nút CTA
+        draw.rounded_rectangle([80, 880, width - 80, 980], radius=16, fill=gold)
+        draw.text((120, 915), "KHỞI CHẠY WORKFLOW THÀNH CÔNG TRÊN TELEGRAM", fill=(11, 15, 23))
+
+        image.save(output_path, "JPEG", quality=95)
+        return True
+    except Exception as e:
+        logger.error(f"Lỗi tạo Pillow Banner: {e}")
+        return False
+
+def generate_image_sync(prompt: str) -> tuple[str, str]:
+    """Tạo ảnh AI từ AI Horde hoặc Fallback Pillow Banner."""
+    import requests
+    os.makedirs("/tmp/images", exist_ok=True)
+    out_path = f"/tmp/images/img_{int(time.time())}.jpg"
+    
+    # Prompt nâng cấp phong cách Luxury
+    luxury_prompt = (
+        f"{prompt}, commercial luxury photography, obsidian black background (#0B0F17), "
+        f"royal gold rim lighting (#D4AF37), dramatic studio lighting, 8k resolution, photorealistic"
+    )
+    
+    # Thử qua AI Horde GPU phân tán miễn phí
+    success = False
+    try:
+        headers = {"apikey": "0000000000", "Client-Agent": "HermesAgent:1.0:test", "Content-Type": "application/json"}
+        payload = {
+            "prompt": luxury_prompt,
+            "params": {"steps": 25, "width": 512, "height": 512, "sampler_name": "k_euler", "cfg_scale": 7.5}
+        }
+        res = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=12)
+        if res.status_code == 202:
+            job_id = res.json().get("id")
+            for _ in range(10): # Đợi tối đa 25s
+                time.sleep(2.5)
+                st = requests.get(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=10)
+                if st.status_code == 200 and st.json().get("done"):
+                    gens = st.json().get("generations", [])
+                    if gens:
+                        img_bytes = requests.get(gens[0].get("img"), timeout=15).content
+                        with open(out_path, "wb") as f:
+                            f.write(img_bytes)
+                        success = True
+                        break
+    except Exception as e:
+        logger.warning(f"AI Horde timeout/error: {e}")
+
+    if not success or not os.path.exists(out_path):
+        create_luxury_graphic_banner("ẤN PHẨM THƯƠNG HIỆU LUXURY", prompt, out_path)
+
+    caption = (
+        f"🎨 **TÁC PHẨM THIẾT KẾ AI THEO LỆNH CHỦ TỊCH TÂN**\n\n"
+        f"📦 **Yêu cầu:** {prompt}\n"
+        f"💎 **Phong cách:** Luxury Black & Gold (#0B0F17 & #D4AF37)\n"
+        f"👑 **Đội ngũ phụ trách:** Sub-Agent Tent × Zelly × Itan\n\n"
+        f"⚡ **BẢNG ĐIỀU HƯỚNG WORKFLOW 1-CHẠM:**\n"
+        f"• Gõ **`!quote`** : Tính giá cước vận chuyển 1688 trọn gói.\n"
+        f"• Gõ **`!traffic`**: Xuất 3 bài đăng mạng xã hội (FB / Zalo / Threads).\n"
+        f"• Gõ **`boq`**    : Bóc tách chiết khấu cáp Cadisun / Trần Phú 30-35%.\n"
+        f"• Gõ **`!video`**  : Xuất kịch bản TikTok 22s kèm phụ đề SRT."
+    )
+    return out_path, caption
+
+# ==============================================================================
 # BỘ XỬ LÝ TELEGRAM BOT (POLLING ASYNC)
 # ==============================================================================
 async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -190,20 +295,63 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👑 **KÍNH CHÀO CHỦ TỊCH {user.first_name.upper()}!**\n\n"
         "Bộ Ba Tác Chiến **Zelly × Itan × Em Vi** đang trực chiến **24/7 trên Đám Mây Render Cloud**.\n\n"
         "⚡ **Lệnh 1-chạm thông minh:**\n"
+        "• Gõ **`/image <mô tả>`** (hoặc `tạo ảnh: <nội dung>`): Tạo ngay ảnh AI Luxury Black & Gold và gửi vào Telegram.\n"
         "• Gõ **`báo cáo`** (hoặc `!vi`): Em Vi xuất báo cáo tài chính & 3 việc ưu tiên.\n"
         "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược dòng tiền.\n"
+        "• Gõ **`!traffic`**: Xuất 3 chiến dịch kéo traffic đa nền tảng.\n"
         "• Hỏi bất kỳ điều gì về: Logistics 1688, Sàn 1689.vn hoặc Thiết bị điện Duy Phong Bắc Ninh!\n\n"
         "Chủ tịch có thể tắt máy tính đi ngủ, bot vẫn luôn túc trực trên điện thoại của anh 24/24!"
     )
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
+async def handle_image_generation(update: Update, prompt: str):
+    """Xử lý tạo ảnh và trả lời trực tiếp trong Telegram."""
+    await update.message.chat.send_action("upload_photo")
+    status_msg = await update.message.reply_text("🎨 *Hội đồng Zelly × Itan đang khởi tạo ảnh AI Luxury Black & Gold cho Chủ tịch...*", parse_mode="Markdown")
+    
+    loop = asyncio.get_running_loop()
+    img_path, caption = await loop.run_in_executor(None, generate_image_sync, prompt)
+    
+    try:
+        with open(img_path, "rb") as photo_file:
+            await update.message.reply_photo(photo=photo_file, caption=caption, parse_mode="Markdown")
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"Lỗi gửi ảnh Telegram: {e}")
+        await update.message.reply_text(f"Dạ ảnh đã được tạo tại `{img_path}`, nhưng gửi ảnh gặp sự cố: {e}")
+
+async def handle_image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
+    prompt = " ".join(context.args) if context.args else ""
+    if not prompt:
+        prompt = "Container Hoang Thinh Logistics cap ben kho Ha Noi"
+    await handle_image_generation(update, prompt)
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
         return
     user = update.effective_user
-    user_text = update.message.text
+    user_text = update.message.text.strip()
     logger.info(f"Tin nhắn từ {user.first_name} ({user.id}): {user_text}")
     
+    lower_text = user_text.lower()
+    
+    # 0. Kiểm tra yêu cầu tạo ảnh từ tin nhắn tự nhiên
+    if any(lower_text.startswith(prefix) for prefix in ["tạo ảnh", "tao anh", "vẽ ảnh", "ve anh", "vẽ ", "ve ", "ảnh:"]):
+        prompt = user_text
+        for prefix in ["tạo ảnh:", "tao anh:", "tạo ảnh", "tao anh", "vẽ ảnh:", "ve anh:", "vẽ:", "ve:", "vẽ ", "ve ", "ảnh:"]:
+            if lower_text.startswith(prefix):
+                prompt = user_text[len(prefix):].strip()
+                break
+        if not prompt:
+            prompt = "Container Hoang Thinh Logistics phong cach Luxury Black and Gold"
+        await handle_image_generation(update, prompt)
+        return
+
     await update.message.chat.send_action("typing")
     reply_text = generate_ai_response(user_text, user.first_name)
     
@@ -227,6 +375,8 @@ async def run_telegram_bot():
     bot_application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     bot_application.add_handler(CommandHandler("start", handle_start))
     bot_application.add_handler(CommandHandler("report", handle_message))
+    bot_application.add_handler(CommandHandler("image", handle_image_command))
+    bot_application.add_handler(CommandHandler("draw", handle_image_command))
     bot_application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     await bot_application.initialize()
