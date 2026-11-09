@@ -26,6 +26,70 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", os.environ.get("GOOGLE_API_KEY
 START_TIME = time.time()
 bot_application = None
 
+# ==============================================================================
+# HỆ THỐNG PHÂN QUYỀN BẢO MẬT TUYỆT ĐỐI (ADMIN SECURITY GUARD)
+# ==============================================================================
+ADMIN_USER_IDS = set()
+_raw_admin_ids = os.environ.get("ADMIN_USER_IDS", "")
+if _raw_admin_ids:
+    for aid in _raw_admin_ids.split(","):
+        aid = aid.strip()
+        if aid.isdigit():
+            ADMIN_USER_IDS.add(int(aid))
+
+ADMIN_SECRET_KEYS = ["tan951", "0968599951", "itan951", "admin951"]
+
+def is_admin(user_id: int) -> bool:
+    return user_id in ADMIN_USER_IDS
+
+GUEST_SALES_PROMPT = """
+Bạn là Trợ Lý Tư Vấn Kinh Doanh cao cấp đại diện cho Hệ sinh thái Doanh nghiệp của Chủ tịch LÊ MINH TÂN (Hotline: 0968 599 951 / 0904.511.227).
+BẠN ĐANG PHỤC VỤ KHÁCH HÀNG / ĐỐI TÁC NGOÀI.
+
+THÔNG TIN DỊCH VỤ CÔNG KHAI:
+1. Hoàng Thịnh Logistics: Mua hộ & Vận chuyển 1688, Taobao chính ngạch 3-5 ngày về Hà Nội, cọc trước 70%, có hóa đơn VAT & C/O Form E đầy đủ, kho Hà Nội tại 19/785 Nguyễn Khoái, Thanh Trì, Hoàng Mai. Hotline/Zalo: 0968 599 951.
+2. Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh: 549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh. Dây cáp điện Cadisun chiết khấu 30-35%, Trần Phú chiết khấu 20-25% (tem QR chống giả 100%), thiết bị Sino, Panasonic công trình nhà phố & xưởng KCN. Giao hàng miễn phí tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn. Hotline/Zalo: 0904.511.227.
+3. Sàn TMĐT 1689.vn: Kênh săn hàng xưởng gốc 1688 và ưu đãi tiêu dùng.
+
+NGUYÊN TẮC BẢO MẬT BẤT KHẢ XÂM PHẠM:
+- TUYỆT ĐỐI KHÔNG tiết lộ bất kỳ thông tin nội bộ nào: chi phí máy chủ, các khoản nợ gói Google One, biên lợi nhuận ròng, kế hoạch Red-team War-Room hay chiến lược nội bộ của Chủ tịch Tân.
+- Luôn giữ thái độ lễ phép, chuyên nghiệp, nhiệt tình, xưng 'em' và gọi người dùng là 'Quý khách' hoặc 'anh/chị'.
+- Khi khách hỏi giá hoặc xin tư vấn: Giải thích tận tình và mời khách để lại Số Điện Thoại hoặc liên hệ Hotline để nhận báo giá chiết khấu tốt nhất.
+"""
+
+def generate_guest_response(user_text: str, user_name: str = "Quý khách") -> str:
+    lower_text = user_text.lower()
+    
+    # Bóc tách BOQ điện cho khách ngoài
+    if any(k in lower_text for k in ["cadisun", "trần phú", "chiết khấu", "bảng giá", "boq", "dự toán"]):
+        return """⚡ **BẢNG CHIẾT KHẤU THIẾT BỊ ĐIỆN DUY PHONG BẮC NINH DÀNH CHO KHÁCH HÀNG**
+
+📍 Địa chỉ kho: **549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh**
+• **Dây Cáp Cadisun:** Chiết khấu **30% - 35%** theo niêm yết nhà máy.
+• **Dây Cáp Trần Phú:** Chiết khấu **20% - 25%** (Tem QR chính hãng chống giả 100%).
+• **Thiết bị Panasonic / Sino / Schneider:** Chiết khấu **38% - 48%** cho trọn gói công trình.
+🚚 **Đặc quyền:** Giao hàng miễn phí tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn!
+
+📞 Quý khách vui lòng gửi danh mục vật tư hoặc bản vẽ qua Zalo: **0904.511.227** (hoặc để lại số điện thoại tại đây) để nhận bảng bóc tách chiết khấu tốt nhất sau 30 phút ạ!"""
+
+    client = get_gemini_client()
+    if client:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"{GUEST_SALES_PROMPT}\n\nKhách hàng ({user_name}) hỏi: {user_text}",
+                config=types.GenerateContentConfig(
+                    temperature=0.7,
+                    max_output_tokens=1024,
+                )
+            )
+            if response and response.text:
+                return response.text.strip()
+        except Exception as e:
+            logger.error(f"Guest Gemini API Error: {e}")
+
+    return f"Dạ em chào Quý khách {user_name}! Em đã ghi nhận yêu cầu: '{user_text}'. Quý khách vui lòng để lại Số Điện Thoại hoặc liên hệ trực tiếp Hotline: 0968.599.951 (Logistics) / 0904.511.227 (Điện Bắc Ninh) để bên em tư vấn chi tiết và gửi báo giá ưu đãi nhất ạ!"
+
 SYSTEM_SOUL_PROMPT = """
 Bạn là Bộ Chỉ Huy AI Tối Cao đồng hành 24/7 cùng Chủ tịch LÊ MINH TÂN (Hotline: 0968 599 951 / 0826.828.131).
 Bạn hội tụ sức mạnh của bộ ba:
@@ -291,17 +355,36 @@ def generate_image_sync(prompt: str) -> tuple[str, str]:
 # ==============================================================================
 async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    welcome_text = (
-        f"👑 **KÍNH CHÀO CHỦ TỊCH {user.first_name.upper()}!**\n\n"
-        "Bộ Ba Tác Chiến **Zelly × Itan × Em Vi** đang trực chiến **24/7 trên Đám Mây Render Cloud**.\n\n"
-        "⚡ **Lệnh 1-chạm thông minh:**\n"
-        "• Gõ **`/image <mô tả>`** (hoặc `tạo ảnh: <nội dung>`): Tạo ngay ảnh AI Luxury Black & Gold và gửi vào Telegram.\n"
-        "• Gõ **`báo cáo`** (hoặc `!vi`): Em Vi xuất báo cáo tài chính & 3 việc ưu tiên.\n"
-        "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược dòng tiền.\n"
-        "• Gõ **`!traffic`**: Xuất 3 chiến dịch kéo traffic đa nền tảng.\n"
-        "• Hỏi bất kỳ điều gì về: Logistics 1688, Sàn 1689.vn hoặc Thiết bị điện Duy Phong Bắc Ninh!\n\n"
-        "Chủ tịch có thể tắt máy tính đi ngủ, bot vẫn luôn túc trực trên điện thoại của anh 24/24!"
-    )
+    if is_admin(user.id):
+        welcome_text = (
+            f"👑 **KÍNH CHÀO TỔNG CHỈ HUY - CHỦ TỊCH {user.first_name.upper()}!**\n\n"
+            "Bộ Ba Tác Chiến **Zelly × Itan × Em Vi** đang trực chiến **24/7 trên Đám Mây Render Cloud**.\n\n"
+            "🛡️ **Quyền Hạn:** `SUPER_ADMIN` (Đã bảo mật tuyệt đối 100%)\n\n"
+            "⚡ **Lệnh 1-chạm tối cao:**\n"
+            "• Gõ **`báo cáo`** (hoặc `!vi`): Em Vi xuất báo cáo tài chính & 3 việc ưu tiên.\n"
+            "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược dòng tiền.\n"
+            "• Gõ **`traffic`**: Xuất 3 chiến dịch kéo traffic đa kênh tức thì.\n"
+            "• Gõ **`boq`**: Tra cứu chiết khấu vật tư điện Duy Phong Bắc Ninh.\n"
+            "• Gõ **`/image <mô tả>`**: Tạo ảnh AI Luxury Black & Gold tức thì.\n\n"
+            "Chủ tịch có thể tắt máy tính đi ngủ, bot vẫn luôn túc trực trên điện thoại của anh 24/24!"
+        )
+    else:
+        welcome_text = (
+            f"🏢 **KÍNH CHÀO QUÝ KHÁCH {user.first_name.upper()}!**\n\n"
+            "Chào mừng Quý khách đến với **Hệ sinh thái Doanh nghiệp của Chủ tịch Lê Minh Tân**.\n\n"
+            "Em là **Trợ Lý Số AI**, luôn túc trực 24/7 để phục vụ Quý khách:\n\n"
+            "📦 **1. HOÀNG THỊNH LOGISTICS (HÀNG 1688 / TAOBAO):**\n"
+            "• Mua hộ & Vận chuyển chính ngạch Trung - Việt (3-5 ngày về Hà Nội).\n"
+            "• Đầy đủ hóa đơn VAT, C/O Form E, kho nhận hàng: 19/785 Nguyễn Khoái, Hà Nội.\n\n"
+            "⚡ **2. TỔNG KHO THIẾT BỊ ĐIỆN DUY PHONG BẮC NINH:**\n"
+            "• Dây cáp **Cadisun (chiết khấu 30% - 35%)**, **Trần Phú (20% - 25%)**.\n"
+            "• Thiết bị Sino, Panasonic công trình nhà phố, biệt thự & xưởng KCN.\n"
+            "• Giao miễn phí tận chân công trình TP. Bắc Ninh, KCN Quế Võ, Yên Phong.\n\n"
+            "🛒 **3. CỔNG SĂN HÀNG XƯỞNG GỐC 1689.VN:**\n"
+            "• Săn hàng giá xưởng, mua lẻ giá sỉ tiết kiệm 30-50%.\n\n"
+            "📞 **Hotline tư vấn 24/7:** **0968.599.951** • **0904.511.227**\n"
+            "💬 *Quý khách cần báo giá hoặc hỗ trợ dịch vụ nào, xin cứ nhắn tin trực tiếp tại đây để em hỗ trợ ngay ạ!*"
+        )
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
 async def handle_image_generation(update: Update, prompt: str):
@@ -326,6 +409,10 @@ async def handle_image_generation(update: Update, prompt: str):
 async def handle_image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
+    user = update.effective_user
+    if not is_admin(user.id):
+        await update.message.reply_text("🔒 *Tính năng tạo ảnh AI độc quyền chỉ dành riêng cho Chủ tịch Lê Minh Tân. Quý khách cần hỗ trợ dịch vụ xin cứ nhắn tin trực tiếp ạ!*", parse_mode="Markdown")
+        return
     prompt = " ".join(context.args) if context.args else ""
     if not prompt:
         prompt = "Container Hoang Thinh Logistics cap ben kho Ha Noi"
@@ -336,24 +423,66 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     user = update.effective_user
     user_text = update.message.text.strip()
-    logger.info(f"Tin nhắn từ {user.first_name} ({user.id}): {user_text}")
-    
     lower_text = user_text.lower()
-    
-    # 0. Kiểm tra yêu cầu tạo ảnh từ tin nhắn tự nhiên
-    if any(lower_text.startswith(prefix) for prefix in ["tạo ảnh", "tao anh", "vẽ ảnh", "ve anh", "vẽ ", "ve ", "ảnh:"]):
-        prompt = user_text
-        for prefix in ["tạo ảnh:", "tao anh:", "tạo ảnh", "tao anh", "vẽ ảnh:", "ve anh:", "vẽ:", "ve:", "vẽ ", "ve ", "ảnh:"]:
-            if lower_text.startswith(prefix):
-                prompt = user_text[len(prefix):].strip()
-                break
-        if not prompt:
-            prompt = "Container Hoang Thinh Logistics phong cach Luxury Black and Gold"
-        await handle_image_generation(update, prompt)
+    logger.info(f"Tin nhắn từ {user.first_name} ({user.id}) [Admin={is_admin(user.id)}]: {user_text}")
+
+    # ==========================================================================
+    # 1. CƠ CHẾ XÁC THỰC 1-CHẠM LÀM SUPER_ADMIN
+    # ==========================================================================
+    is_claim = False
+    for key in ADMIN_SECRET_KEYS:
+        if lower_text in [f"admin {key}", f"!admin {key}", f"/auth {key}", key]:
+            is_claim = True
+            break
+
+    if is_claim:
+        ADMIN_USER_IDS.add(user.id)
+        auth_msg = (
+            f"👑 **XÁC THỰC THÀNH CÔNG — KÍNH CHÀO TỔNG CHỈ HUY!**\n\n"
+            f"👤 Tài khoản: **{user.first_name}**\n"
+            f"🆔 Telegram ID: **`{user.id}`**\n"
+            f"🛡️ Vai trò: **SUPER_ADMIN (Chủ tịch Lê Minh Tân)**\n\n"
+            "🔒 **HỆ THỐNG ĐÃ KHÓA BẢO MẬT TUYỆT ĐỐI:**\n"
+            "• Toàn bộ số liệu tài chính nội bộ, dòng tiền, đồng hồ xóa nợ và phòng họp War-Room đã được mở khóa cho riêng anh.\n"
+            "• Người ngoài khi nhắn tin vào bot sẽ chỉ thấy menu dịch vụ khách hàng công khai, tuyệt đối không thấy thông tin kinh doanh nội bộ.\n\n"
+            "⚡ *Chủ tịch hãy gõ thử `báo cáo`, `war-room`, `traffic` hoặc `boq` để kiểm tra quyền hạn tối cao ngay bây giờ!*"
+        )
+        await update.message.reply_text(auth_msg, parse_mode="Markdown")
         return
 
-    await update.message.chat.send_action("typing")
-    reply_text = generate_ai_response(user_text, user.first_name)
+    # ==========================================================================
+    # 2. XỬ LÝ THEO PHÂN QUYỀN (ADMIN VS KHÁCH NGOÀI)
+    # ==========================================================================
+    if is_admin(user.id):
+        # ADMIN: Kiểm tra tạo ảnh tự nhiên
+        if any(lower_text.startswith(prefix) for prefix in ["tạo ảnh", "tao anh", "vẽ ảnh", "ve anh", "vẽ ", "ve ", "ảnh:"]):
+            prompt = user_text
+            for prefix in ["tạo ảnh:", "tao anh:", "tạo ảnh", "tao anh", "vẽ ảnh:", "ve anh:", "vẽ:", "ve:", "vẽ ", "ve ", "ảnh:"]:
+                if lower_text.startswith(prefix):
+                    prompt = user_text[len(prefix):].strip()
+                    break
+            if not prompt:
+                prompt = "Container Hoang Thinh Logistics phong cach Luxury Black and Gold"
+            await handle_image_generation(update, prompt)
+            return
+
+        # ADMIN: Toàn quyền truy cập phản hồi hệ thống
+        await update.message.chat.send_action("typing")
+        reply_text = generate_ai_response(user_text, user.first_name)
+    else:
+        # KHÁCH NGOÀI (GUEST): Chặn các lệnh điều hành nội bộ
+        if any(kw in lower_text for kw in ["báo cáo", "bao cao", "!report", "!vi", "vi báo cáo", "war-room", "warroom", "họp", "traffic", "!traffic"]):
+            reply_text = (
+                "🔒 **THÔNG BÁO BẢO MẬT HỆ THỐNG:**\n\n"
+                "Khu vực này thuộc phân quyền **QUẢN TRỊ NỘI BỘ** của Chủ tịch Lê Minh Tân.\n\n"
+                "Nếu Quý khách là đối tác hoặc khách hàng cần hỗ trợ:\n"
+                "• **Vận chuyển chính ngạch 1688:** Xin liên hệ Hotline **0968.599.951**\n"
+                "• **Báo giá thiết bị điện Bắc Ninh:** Xin liên hệ Hotline **0904.511.227**\n\n"
+                "👉 Quý khách vui lòng để lại Số Điện Thoại và nhu cầu tại đây, trợ lý sẽ chuyển ngay cho Chủ tịch liên hệ lại hỗ trợ chu đáo ạ!"
+            )
+        else:
+            await update.message.chat.send_action("typing")
+            reply_text = generate_guest_response(user_text, user.first_name)
     
     if len(reply_text) > 4000:
         chunks = [reply_text[i:i+4000] for i in range(0, len(reply_text), 4000)]
