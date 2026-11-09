@@ -11,5 +11,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: ADMIN_USER_IDS
+        value: "7574870612"
       - key: PYTHON_VERSION
         value: 3.12.0
