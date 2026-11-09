@@ -275,7 +275,7 @@ def auto_publish_workflow_sync(topic: str, website: str = "bacninh") -> dict:
     
     if website in ["bacninh", "thietbidien-bacninh"]:
         site_name = "Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh"
-        site_url = "https://thietbidien-bacninh.com"
+        site_url = "http://thietbidien-bacninh.com"
         repo_name = "thietbidien-bacninh"
         prompt_ctx = "Website Thiết bị điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú, Panasonic."
     else:
