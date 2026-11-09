@@ -264,7 +264,17 @@ def create_slug_url(text: str) -> str:
     text = re.sub(r'[\s-]+', '-', text).strip('-')
     return text[:60]
 
-def auto_publish_workflow_sync(topic: str, website: str = "bacninh") -> dict:
+def normalize_target_site(web_input: str) -> str:
+    web = (web_input or "").lower().strip()
+    if any(k in web for k in ["a thành", "a thanh", "athanh", "a-thanh", "bacninh", "bac ninh", "duyphong", "duy phong"]):
+        return "athanh"
+    if any(k in web for k in ["logistics", "hoangthinh", "hoang thinh", "itan", "1688"]):
+        return "logistics"
+    if any(k in web for k in ["1689", "affiliate"]):
+        return "1689"
+    return "athanh"
+
+def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
     """Tự viết bài SEO bằng Gemini AI, tạo ảnh Luxury, cập nhật GitHub Pages và trả kết quả."""
     import base64
     import requests
@@ -272,12 +282,13 @@ def auto_publish_workflow_sync(topic: str, website: str = "bacninh") -> dict:
     from google.genai import types
 
     client = genai.Client(api_key=GEMINI_API_KEY)
+    website = normalize_target_site(website)
     
-    if website in ["bacninh", "thietbidien-bacninh"]:
-        site_name = "Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh"
+    if website == "athanh":
+        site_name = "Website A Thành (thietbidien-bacninh.com)"
         site_url = "http://thietbidien-bacninh.com"
         repo_name = "thietbidien-bacninh"
-        prompt_ctx = "Website Thiết bị điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú, Panasonic."
+        prompt_ctx = "Website A Thành — Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú, Panasonic."
     else:
         site_name = "Hoàng Thịnh Logistics"
         site_url = "https://itanle951-rgb.github.io/hoangthinh-logistics"
@@ -352,8 +363,8 @@ def auto_publish_workflow_sync(topic: str, website: str = "bacninh") -> dict:
     except Exception as e:
         logger.warning(f"Lỗi đẩy ảnh lên GitHub: {e}")
 
-    # Cập nhật mã nguồn bài viết (app.js cho web Bắc Ninh)
-    if website in ["bacninh", "thietbidien-bacninh"]:
+    # Cập nhật mã nguồn bài viết (app.js cho Website A Thành)
+    if website == "athanh":
         try:
             get_js = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/contents/js/app.js", headers=headers)
             if get_js.status_code == 200:
@@ -773,12 +784,31 @@ async def run_telegram_bot():
     await bot_application.updater.start_polling(drop_pending_updates=True)
     logger.info("✓ Telegram Bot đã kết nối thành công và đang lắng nghe 24/7!")
 
+async def keep_alive_worker():
+    """Tự động ping máy chủ mỗi 9 phút để Render Cloud không bao giờ ngủ đông (Zero Cold-Start)."""
+    await asyncio.sleep(45)  # Chờ bot & FastAPI khởi động ổn định
+    render_url = os.environ.get("RENDER_EXTERNAL_URL", "https://itan-telegram-bot.onrender.com")
+    ping_url = f"{render_url.rstrip('/')}/ping"
+    logger.info(f"⚡ [Keep-Alive] Kích hoạt cơ chế Zero Cold-Start 24/7 tới: {ping_url}")
+    
+    import urllib.request
+    while True:
+        try:
+            await asyncio.sleep(540)  # Ping mỗi 9 phút (Render ngủ sau 15 phút, 9 phút là khoảng cách an toàn nhất)
+            req = urllib.request.Request(ping_url, headers={"User-Agent": "Zero-Cold-Start-Engine/2.0"})
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, lambda: urllib.request.urlopen(req, timeout=15))
+            logger.info(f"⚡ [Keep-Alive] Ping thành công lúc {time.strftime('%H:%M:%S')} - Máy chủ duy trì tỉnh thức 100%!")
+        except Exception as e:
+            logger.warning(f"[Keep-Alive] Cảnh báo ping: {e}")
+
 # ==============================================================================
 # MÁY CHỦ WEB FASTAPI (HỖ TRỢ RENDER CLOUD & HEALTHCHECKS)
 # ==============================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     tg_task = asyncio.create_task(run_telegram_bot())
+    keep_alive_task = asyncio.create_task(keep_alive_worker())
     yield
     if bot_application:
         await bot_application.updater.stop()
