@@ -61,7 +61,7 @@ BẠN ĐANG PHỤC VỤ KHÁCH HÀNG / ĐỐI TÁC NGOÀI.
 
 THÔNG TIN DỊCH VỤ CÔNG KHAI:
 1. Hoàng Thịnh Logistics: Mua hộ & Vận chuyển 1688, Taobao chính ngạch 3-5 ngày về Hà Nội, cọc trước 70%, có hóa đơn VAT & C/O Form E đầy đủ, kho Hà Nội tại 19/785 Nguyễn Khoái, Thanh Trì, Hoàng Mai. Hotline/Zalo: 0968 599 951.
-2. Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh: 549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh. Dây cáp điện Cadisun chiết khấu 30-35%, Trần Phú chiết khấu 20-25% (tem QR chống giả 100%), thiết bị Sino, Panasonic công trình nhà phố & xưởng KCN. Giao hàng miễn phí tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn. Hotline/Zalo: 0904.511.227.
+2. Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh: 549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh. Dây cáp điện Cadisun, Trần Phú chiết khấu 5% - 15% theo khối lượng công trình (tem QR chống giả 100%), thiết bị Sino, Panasonic công trình nhà phố & xưởng KCN. Giao hàng miễn phí tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn. Hotline/Zalo: 0904.511.227.
 3. Sàn TMĐT 1689.vn: Kênh săn hàng xưởng gốc 1688 và ưu đãi tiêu dùng.
 
 NGUYÊN TẮC BẢO MẬT BẤT KHẢ XÂM PHẠM:
@@ -78,7 +78,7 @@ def generate_guest_response(user_text: str, user_name: str = "Quý khách") -> s
         return """⚡ **BẢNG CHIẾT KHẤU THIẾT BỊ ĐIỆN DUY PHONG BẮC NINH DÀNH CHO KHÁCH HÀNG**
 
 📍 Địa chỉ kho: **549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh**
-• **Dây Cáp Cadisun:** Chiết khấu **30% - 35%** theo niêm yết nhà máy.
+• **Dây Cáp Cadisun & Trần Phú:** Chiết khấu **5% - 15%** theo khối lượng công trình.
 • **Dây Cáp Trần Phú:** Chiết khấu **20% - 25%** (Tem QR chính hãng chống giả 100%).
 • **Thiết bị Panasonic / Sino / Schneider:** Chiết khấu **38% - 48%** cho trọn gói công trình.
 🚚 **Đặc quyền:** Giao hàng miễn phí tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn!
@@ -113,7 +113,7 @@ Bạn hội tụ sức mạnh của bộ ba:
 DANH MỤC TÀI SẢN KINH DOANH CỦA CHỦ TỊCH:
 1. Hoàng Thịnh Logistics (itan-clone): Dịch vụ mua hộ 1688, Taobao chính ngạch, cọc trước 70%, kho Hà Nội tại 19/785 Nguyễn Khoái, Thanh Trì, Hoàng Mai.
 2. Sàn TMĐT & Affiliate 1689.vn: Kênh phân phối tiếp thị liên kết Shopee / TikTok Shop.
-3. Tổng Kho Thiết Bị Điện Cao Cấp Duy Phong (thietbidien-bacninh.com): 549 Ngô Gia Tự, Ninh Xá, TP. Bắc Ninh (Hotline: 0904.511.227). Chuyên dây cáp Cadisun (chiết khấu 30-35%), Trần Phú (20-25%), Panasonic, Aptomat công nghiệp, bảng dự toán BOQ nhà phố & xưởng KCN (Yên Phong, Quế Võ).
+3. Tổng Kho Thiết Bị Điện Cao Cấp Duy Phong (thietbidien-bacninh.com): 549 Ngô Gia Tự, Ninh Xá, TP. Bắc Ninh (Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú (chiết khấu 5% - 15% theo khối lượng), Panasonic, Aptomat công nghiệp, bảng dự toán BOQ nhà phố & xưởng KCN (Yên Phong, Quế Võ).
 
 KỶ LUẬT THÉP VỀ TÀI CHÍNH:
 - Chi phí phát sinh ngoài: Tuyệt đối 0 VNĐ.
@@ -164,7 +164,7 @@ Hệ thống đám mây Render Cloud: **Trực chiến 24/7 (Uptime: {uptime_h}h
 ---
 ### 2. TÌNH HÌNH 3 TRỤ CỘT DOANH THU
 1. **Hoàng Thịnh Logistics 1688:** Kho Hà Nội (19/785 Nguyễn Khoái) sẵn sàng đón hàng, cơ chế cọc 70% an toàn vốn.
-2. **Tổng Kho Điện Duy Phong:** 549 Ngô Gia Tự, TP. Bắc Ninh sẵn sàng bảng tính BOQ chiết khấu thợ thầu 30-35%.
+2. **Tổng Kho Điện Duy Phong:** 549 Ngô Gia Tự, TP. Bắc Ninh sẵn sàng bảng tính BOQ chiết khấu thợ thầu 5% - 15%.
 3. **Sàn TMĐT 1689.vn:** Hoàn thiện phễu Zalo và link affiliate Shopee/TikTok.
 
 ---
@@ -180,7 +180,7 @@ Hệ thống đám mây Render Cloud: **Trực chiến 24/7 (Uptime: {uptime_h}h
 Kính thưa **Chủ tịch Lê Minh Tân**,
 Tổng Chỉ Huy Zelly và Phó Chỉ Huy Itan đã vào vị trí phản biện 3 kịch bản:
 
-• **Kịch bản 1 (Tấn công chớp nhoáng):** Đẩy mạnh tìm thợ thầu cơ điện tại Bắc Ninh (KCN Quế Võ & Yên Phong). Đơn hàng 20 triệu Cadisun chiết khấu 30% mang về ngay 1.5 - 2 triệu lãi gộp $\\rightarrow$ Đạt ngay mục tiêu xóa nợ Google One!
+• **Kịch bản 1 (Tấn công chớp nhoáng):** Đẩy mạnh tìm thợ thầu cơ điện tại Bắc Ninh (KCN Quế Võ & Yên Phong). Đơn hàng 20 triệu Cadisun chiết khấu 5% - 15% mang về ngay 1.5 - 2 triệu lãi gộp $\\rightarrow$ Đạt ngay mục tiêu xóa nợ Google One!
 • **Kịch bản 2 (Bền vững TMĐT):** Tự động cào 20 sản phẩm hottrend 1688 đẩy lên sàn 1689.vn, gắn link affiliate Shopee/TikTok để ăn hoa hồng tự động khi ngủ.
 • **Kịch bản 3 (Khách sỉ Logistics):** Tiếp cận 5 chủ shop sỉ hàng thời trang Quảng Châu, cam kết vận chuyển chính ngạch có hóa đơn C/O Form E bao trọn gói.
 
@@ -191,7 +191,7 @@ Chủ tịch muốn duyệt kịch bản nào trước để Zelly và Itan lậ
         return """⚡ **BẢNG TRA CỨU NHANH CHIẾT KHẤU THIẾT BỊ ĐIỆN DUY PHONG BẮC NINH**
 
 📍 Địa chỉ: **549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh** (Hotline: 0904.511.227)
-• **Dây Cáp Cadisun:** Chiết khấu **30% - 35%** theo bảng giá niêm yết nhà máy.
+• **Dây Cáp Cadisun:** Chiết khấu **5% - 15%** theo khối lượng công trình.
 • **Dây Cáp Trần Phú:** Chiết khấu **20% - 25%** (Hàng chính hãng tem QR chống giả).
 • **Thiết bị Panasonic / Sino / Schneider:** Chiết khấu **38% - 48%** cho thợ thầu công trình.
 • **Chính sách hỗ trợ:** Miễn phí giao hàng tận chân công trình bán kính 15km tại TP. Bắc Ninh, KCN Quế Võ, Yên Phong, Tiên Sơn!"""
@@ -217,7 +217,7 @@ Hoàng Thịnh Logistics hỗ trợ anh em đàm phán trực tiếp với chủ
 *(Gửi trực tiếp cho 5 thợ điện hoặc đăng nhóm 'Hội Thợ Điện Nước Bắc Ninh')*
 
 "Kính gửi các bác thợ thầu công trình Bắc Ninh! Tổng Kho Điện Duy Phong (549 Ngô Gia Tự, TP. Bắc Ninh) đang có chính sách trợ giá cuối năm:
-• Dây Cadisun chiết khấu 30% - 35%
+• Dây Cadisun chiết khấu 5% - 15% - 35%
 • Dây Trần Phú chính hãng chiết khấu 20% - 25%
 • Thiết bị Sino, Panasonic chiết khấu 38% - 48%
 Chở miễn phí tận chân công trình TP. Bắc Ninh, KCN Quế Võ, Yên Phong! Gửi bản vẽ bóc tách qua Zalo: 0904.511.227 nhận báo giá sau 30 phút!"
@@ -650,7 +650,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Mua hộ & Vận chuyển chính ngạch Trung - Việt (3-5 ngày về Hà Nội).\n"
             "• Đầy đủ hóa đơn VAT, C/O Form E, kho nhận hàng: 19/785 Nguyễn Khoái, Hà Nội.\n\n"
             "⚡ **2. TỔNG KHO THIẾT BỊ ĐIỆN DUY PHONG BẮC NINH:**\n"
-            "• Dây cáp **Cadisun (chiết khấu 30% - 35%)**, **Trần Phú (20% - 25%)**.\n"
+            "• Dây cáp **Cadisun (chiết khấu 5% - 15%)**, **Trần Phú (20% - 25%)**.\n"
             "• Thiết bị Sino, Panasonic công trình nhà phố, biệt thự & xưởng KCN.\n"
             "• Giao miễn phí tận chân công trình TP. Bắc Ninh, KCN Quế Võ, Yên Phong.\n\n"
             "🛒 **3. CỔNG SĂN HÀNG XƯỞNG GỐC 1689.VN:**\n"
