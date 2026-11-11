@@ -549,36 +549,67 @@ def wrap_render_lines(text, font, max_width, draw):
         lines.append(' '.join(current_line))
     return lines
 
+def find_best_photo_from_library(query: str) -> tuple[str, str]:
+    """Tìm ảnh thực tế phù hợp nhất từ photo_library.json của Website A Thành.
+    Trả về (image_url, category_name)
+    """
+    query_lower = query.lower()
+    lib_path = BASE_DIR / "data" / "photo_library.json"
+    if not lib_path.exists():
+        lib_path = Path("E:/ANTIGRAVITY/a-thanh-bn/data/photo_library.json")
+    
+    if lib_path.exists():
+        try:
+            with open(lib_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            photos = data.get("photos", [])
+            best_match = None
+            max_score = 0
+            for p in photos:
+                score = sum(1 for kw in p.get("keywords", []) if kw in query_lower)
+                if score > max_score:
+                    max_score = score
+                    best_match = p
+            if best_match:
+                return best_match.get("raw_url"), best_match.get("category", "Kỹ Thuật Điện Bắc Ninh")
+        except Exception as e:
+            logger.warning(f"Lỗi đọc photo_library.json: {e}")
+            
+    # Mặc định ảnh kho dây cáp thiết bị Duy Phong
+    return "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg", "Tổng Kho Duy Phong"
+
 def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
-    """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) chuẩn 100% tiếng Việt."""
+    """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) lấy ảnh nền từ Thư Viện Ảnh A Thành."""
     try:
         from PIL import Image, ImageDraw, ImageEnhance
         width, height = 1200, 675
         
-        # 1. Thử tải ảnh nền thực tế từ kho Unsplash hoặc tạo gradient
+        # 1. Tải ảnh thực tế từ Kho Ảnh Riêng Biệt của Website A Thành (photo_library.json)
         base = None
+        matched_url, matched_cat = find_best_photo_from_library(f"{title} {subtitle}")
         try:
             import urllib.request
-            unsplash_url = "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=1200&h=675&fit=crop&q=80"
-            req = urllib.request.Request(unsplash_url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=5) as resp:
+            req = urllib.request.Request(matched_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
                 from io import BytesIO
                 base = Image.open(BytesIO(resp.read())).convert("RGBA")
                 base = base.resize((width, height), Image.Resampling.LANCZOS)
-        except Exception:
+                logger.info(f"✓ Đã nạp ảnh nền thực tế từ kho ảnh A Thành: {matched_url}")
+        except Exception as e:
+            logger.warning(f"Không thể nạp ảnh từ photo_library ({e}), dùng nền màu sang trọng.")
             base = None
 
         if not base:
             base = Image.new("RGBA", (width, height), (15, 23, 42, 255))
         else:
             enhancer = ImageEnhance.Brightness(base)
-            base = enhancer.enhance(0.40)
+            base = enhancer.enhance(0.36)
 
-        # 2. Gradient mờ tối Dark Navy
+        # 2. Gradient mờ tối Dark Navy huyền bí
         overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         d_over = ImageDraw.Draw(overlay)
         for x in range(width):
-            alpha = int(130 + (125 * (1 - (x / width) ** 0.8)))
+            alpha = int(140 + (115 * (1 - (x / width) ** 0.8)))
             d_over.line([(x, 0), (x, height)], fill=(11, 15, 23, alpha))
         for y in range(height):
             alpha_v = int(60 * (y / height))
@@ -602,13 +633,13 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         font_brand = get_render_font(20)
         font_cat = get_render_font(18)
         
-        cat_text = "  👑 CHUYÊN MỤC CẨM NANG & THỰC CHIẾN  "
+        cat_text = f"  👑 {matched_cat.upper()}  "
         bbox_cat = draw.textbbox((0, 0), cat_text, font=font_cat)
         badge_w = (bbox_cat[2] - bbox_cat[0]) + 20
         draw.rounded_rectangle([50, 45, 50 + badge_w, 45 + 36], radius=8, fill=(212, 175, 55, 240))
         draw.text((60, 52), cat_text, fill=(11, 15, 23, 255), font=font_cat)
 
-        brand_sub = "HỆ THỐNG DOANH NGHIỆP — CHỦ TỊCH LÊ MINH TÂN"
+        brand_sub = "TỔNG KHO THIẾT BỊ ĐIỆN DUY PHONG — BẮC NINH"
         bbox_brand = draw.textbbox((0, 0), brand_sub, font=font_brand)
         draw.text((width - 60 - (bbox_brand[2] - bbox_brand[0]), 52), brand_sub, fill=gold_light, font=font_brand)
 
@@ -632,16 +663,40 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         draw.ellipse([348, sep_y - 4, 356, sep_y + 4], fill=gold)
 
         # 7. Box 3 Điểm Nhấn Thực Chiến
-        font_bullet = get_render_font(22)
+        font_bullet = get_render_font(21)
         bullet_y = sep_y + 25
-        bullets = [
-            f"• Chủ đề thực chiến: {subtitle[:65]}",
-            "• Chuẩn nhận diện: Luxury Obsidian Black & Royal Gold (#D4AF37)",
-            "• Đơn vị vận hành: Tổng Kho Điện Duy Phong & Hoàng Thịnh Logistics"
-        ]
+        
+        q_all = f"{title} {subtitle}".lower()
+        if "cadisun" in q_all:
+            bullets = [
+                "Chứng nhận CO/CQ & Tem QR chống hàng giả 100%",
+                "Chiết khấu thợ thầu kịch sàn: 5% - 15% theo khối lượng",
+                "Hỗ trợ kỹ thuật đấu nối & giao nhanh tận chân công trình"
+            ]
+        elif "trần phú" in q_all or "tran phu" in q_all:
+            bullets = [
+                "Dây cáp điện Trần Phú chính hãng tem cào phủ QR code",
+                "Chiết khấu đại lý trực tiếp: 20% - 25% tại Tổng Kho",
+                "Đầy đủ chứng từ xuất xưởng & giao miễn phí 15km Bắc Ninh"
+            ]
+        elif any(k in q_all for k in ["aptomat", "rcbo", "mcb", "tủ điện", "chống giật"]):
+            bullets = [
+                "Thiết bị đóng cắt an toàn, ngắt dòng rò tức thì trong 0.03s",
+                "RCBO 30mA bảo vệ chống điện giật tuyệt đối cho gia đình",
+                "Kỹ sư A Thành tư vấn sơ đồ phân tầng tủ điện an toàn"
+            ]
+        else:
+            bullets = [
+                f"Chủ đề thực chiến: {subtitle[:65]}",
+                "100% hàng chính hãng đầy đủ hóa đơn VAT & CO/CQ",
+                "Tổng Kho Duy Phong: 549 Ngô Gia Tự, TP. Bắc Ninh"
+            ]
+
         for b in bullets:
-            draw.text((54, bullet_y + 2), b, fill=(0, 0, 0, 200), font=font_bullet)
-            draw.text((52, bullet_y), b, fill=(226, 232, 240, 255), font=font_bullet)
+            # Vẽ chấm tròn mạ vàng vector
+            draw.ellipse([54, bullet_y + 5, 64, bullet_y + 15], fill=gold)
+            draw.text((74, bullet_y + 2), b, fill=(0, 0, 0, 200), font=font_bullet)
+            draw.text((72, bullet_y), b, fill=(226, 232, 240, 255), font=font_bullet)
             bullet_y += 38
 
         # 8. Footer Bar: Tác giả & Hotline
@@ -650,14 +705,18 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         footer_box_y = height - 90
         draw.rounded_rectangle([45, footer_box_y, width - 45, footer_box_y + 55], radius=10, fill=(15, 23, 42, 230), outline=(212, 175, 55, 120), width=1)
         
-        draw.text((65, footer_box_y + 16), "👤 Tác giả: Kỹ sư A Thành & Lê Minh Tân", fill=text_muted, font=font_footer)
-        hotline = "0904.511.227 - 0968.599.951"
+        draw.text((65, footer_box_y + 16), "👤 Tác giả: Kỹ sư A Thành (Tổng Kho Duy Phong)", fill=text_muted, font=font_footer)
+        hotline = "0904.511.227"
         bbox_hl = draw.textbbox((0, 0), f"📞 Hotline: {hotline}", font=font_hotline)
         draw.text((width - 65 - (bbox_hl[2] - bbox_hl[0]), footer_box_y + 14), f"📞 Hotline: {hotline}", fill=gold_light, font=font_hotline)
 
         final_img = composed.convert("RGB")
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         final_img.save(output_path, "JPEG", quality=95)
+        return True
+    except Exception as e:
+        logger.error(f"Lỗi tạo Luxury Graphic Banner: {e}")
+        return False
         return True
     except Exception as e:
         logger.error(f"Lỗi tạo Luxury Graphic Banner: {e}")
