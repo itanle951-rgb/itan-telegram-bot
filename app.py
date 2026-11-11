@@ -3,11 +3,14 @@ import sys
 import time
 import asyncio
 import logging
+import json
+import re
+from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from google import genai
 from google.genai import types
 
@@ -24,6 +27,8 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", os.environ.get("GOOGLE_API_KEY", ""))
 
 START_TIME = time.time()
+BASE_DIR = Path(__file__).resolve().parent
+PENDING_DRAFTS = {}
 bot_application = None
 
 # ==============================================================================
@@ -217,7 +222,7 @@ Hoàng Thịnh Logistics hỗ trợ anh em đàm phán trực tiếp với chủ
 *(Gửi trực tiếp cho 5 thợ điện hoặc đăng nhóm 'Hội Thợ Điện Nước Bắc Ninh')*
 
 "Kính gửi các bác thợ thầu công trình Bắc Ninh! Tổng Kho Điện Duy Phong (549 Ngô Gia Tự, TP. Bắc Ninh) đang có chính sách trợ giá cuối năm:
-• Dây Cadisun chiết khấu 5% - 15% - 35%
+• Dây Cadisun chiết khấu 5% - 15% theo khối lượng
 • Dây Trần Phú chính hãng chiết khấu 20% - 25%
 • Thiết bị Sino, Panasonic chiết khấu 38% - 48%
 Chở miễn phí tận chân công trình TP. Bắc Ninh, KCN Quế Võ, Yên Phong! Gửi bản vẽ bóc tách qua Zalo: 0904.511.227 nhận báo giá sau 30 phút!"
@@ -287,8 +292,8 @@ def normalize_target_site(web_input: str) -> str:
         return "1689"
     return "athanh"
 
-def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
-    """Tự viết bài SEO bằng Gemini AI, tạo ảnh Luxury, cập nhật GitHub Pages và trả kết quả."""
+def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
+    """Soạn thảo bài viết chuẩn SEO và thiết kế banner Luxury, lưu vào hàng chờ duyệt (Approval Boundary)."""
     import base64
     import requests
     from google import genai
@@ -301,27 +306,34 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
         site_name = "Website A Thành (thietbidien-bacninh.com)"
         site_url = "http://thietbidien-bacninh.com"
         repo_name = "thietbidien-bacninh"
-        prompt_ctx = "Website A Thành — Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). Chuyên dây cáp Cadisun, Trần Phú, Panasonic."
+        author_name = "A Thành BN"
+        prompt_ctx = (
+            "Website A Thành — Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). "
+            "Chuyên dây cáp Cadisun (chiết khấu thợ thầu 5% - 15% theo khối lượng, tem QR chống hàng giả 100%), "
+            "dây Trần Phú (20% - 25%), Panasonic, Schneider. "
+            "QUY TẮC BẮT BUỘC: Tuyệt đối KHÔNG ghi chiết khấu 30-35% cho Cadisun. Tác giả bài viết là Kỹ sư A Thành."
+        )
     else:
         site_name = "Hoàng Thịnh Logistics"
         site_url = "https://itanle951-rgb.github.io/hoangthinh-logistics"
         repo_name = "hoangthinh-logistics"
-        prompt_ctx = "Hoàng Thịnh Logistics (Kho 19/785 Nguyễn Khoái, Hoàng Mai, Hà Nội. Hotline: 0968 599 951). Chuyên vận chuyển 1688, Taobao chính ngạch."
+        author_name = "Lê Minh Tân"
+        prompt_ctx = "Hoàng Thịnh Logistics (Kho 19/785 Nguyễn Khoái, Hoàng Mai, Hà Nội. Hotline: 0968 599 951). Chuyên vận chuyển 1688, Taobao chính ngạch 3-5 ngày về Hà Nội."
 
     # 1. Viết bài với Gemini AI
     article = None
     system_inst = f"""
     Bạn là Kỹ sư Trưởng & Chuyên gia Content SEO. Ngữ cảnh: {prompt_ctx}
-    Viết 1 bài viết chuẩn SEO chuyên sâu, trả về JSON chuẩn:
+    Viết 1 bài viết chuẩn SEO chuyên sâu, văn phong chuyên nghiệp, thực tế. Trả về JSON chuẩn:
     {{
       "title": "Tiêu đề chuẩn SEO hấp dẫn dài 60-80 ký tự",
       "category": "Tên chuyên mục",
       "summary": "Đoạn sapo lôi cuốn 2-3 câu",
-      "content_html": "Nội dung chi tiết thẻ HTML <h3>, <p>, <ul>, <li>, <strong>, bảng thông số, lời khuyên thực tế và kết bài liên hệ Hotline",
+      "content_html": "Nội dung chi tiết thẻ HTML <h3>, <p>, <ul>, <li>, <strong>, bảng thông số, lời khuyên thực tế và kết bài liên hệ Hotline 0904.511.227",
       "image_prompt": "Prompt tiếng Anh chi tiết để tạo ảnh Luxury Black and Gold cho bài viết này"
     }}
     """
-    for m in ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash-lite']:
+    for m in ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.1-flash-lite']:
         try:
             resp = client.models.generate_content(
                 model=m,
@@ -335,20 +347,47 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
 
     if not article:
         article = {
-            "title": f"Cẩm nang kiến thức chuyên sâu: {topic}",
+            "title": f"Kinh nghiệm chọn thiết bị điện chính hãng: {topic}",
             "category": "Kinh Nghiệm Thực Tế",
-            "summary": f"Hướng dẫn và phân tích chi tiết về {topic} giúp tiết kiệm chi phí và đảm bảo an toàn tuyệt đối.",
-            "content_html": f"<h3>1. Giới thiệu về {topic}</h3><p>Nắm vững giải pháp về {topic} mang lại giá trị to lớn cho công trình.</p><h3>2. Lời khuyên</h3><p>Luôn lựa chọn sản phẩm chính hãng có nguồn gốc minh bạch.</p>",
+            "summary": f"Phân tích chuyên sâu về {topic} giúp tiết kiệm chi phí công trình và đảm bảo an toàn tuyệt đối.",
+            "content_html": f"<h3>1. Giới thiệu giải pháp {topic}</h3><p>Lựa chọn vật tư điện đúng chuẩn chất lượng mang lại độ bền vượt trội cho công trình tại Bắc Ninh.</p><h3>2. Lời khuyên từ Kỹ sư A Thành</h3><p>Luôn yêu cầu đầy đủ CO/CQ và quét mã QR xác thực chính hãng tại Tổng Kho Duy Phong (549 Ngô Gia Tự, Hotline: 0904.511.227).</p>",
             "image_prompt": f"Luxury black and gold illustration of {topic}, cinematic 8k"
         }
 
-    # 2. Tạo ảnh Luxury
+    # 2. Tạo ảnh Luxury Banner
     slug = create_slug_url(article["title"])
     os.makedirs("/tmp/web_images", exist_ok=True)
     img_path = f"/tmp/web_images/{slug}.jpg"
     create_luxury_graphic_banner(article["title"], topic, img_path)
 
-    # 3. Đẩy lên GitHub để Website live
+    # 3. Lưu vào danh sách chờ phê duyệt (Approval Boundary)
+    draft_id = f"pub_{int(time.time())}"
+    draft_data = {
+        "draft_id": draft_id,
+        "topic": topic,
+        "website": website,
+        "site_name": site_name,
+        "site_url": site_url,
+        "repo_name": repo_name,
+        "author": author_name,
+        "article": article,
+        "img_path": img_path,
+        "slug": slug,
+        "created_at": time.time()
+    }
+    PENDING_DRAFTS[draft_id] = draft_data
+    logger.info(f"📋 Đã khởi tạo bản nháp {draft_id}: '{article['title']}' chờ Chủ tịch phê duyệt.")
+    return draft_data
+
+def commit_publish_draft_to_github_sync(draft_id: str) -> dict:
+    """Đẩy bản nháp đã được phê duyệt lên GitHub Pages trực tiếp."""
+    import base64
+    import requests
+
+    draft = PENDING_DRAFTS.get(draft_id)
+    if not draft:
+        raise ValueError(f"Không tìm thấy bản nháp {draft_id}")
+
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "User-Agent": "Antigravity-Publisher",
@@ -356,19 +395,23 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
         "Content-Type": "application/json"
     }
     owner = "itanle951-rgb"
+    repo_name = draft["repo_name"]
+    slug = draft["slug"]
+    img_path = draft["img_path"]
+    article = draft["article"]
+    website = draft["website"]
 
-    # Đẩy ảnh lên GitHub
+    # 1. Đẩy ảnh lên GitHub
     with open(img_path, "rb") as f:
         img_b64 = base64.b64encode(f.read()).decode("utf-8")
-    
+
     img_repo_path = f"assets/images/{slug}.jpg"
     put_img_payload = {
-        "message": f"Auto-Publish Image: {slug}",
+        "message": f"Approved-Publish Image: {slug}",
         "content": img_b64,
         "branch": "main"
     }
     try:
-        # Kiểm tra SHA ảnh nếu có
         res_sha = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/contents/{img_repo_path}", headers=headers)
         if res_sha.status_code == 200:
             put_img_payload["sha"] = res_sha.json().get("sha")
@@ -376,7 +419,8 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
     except Exception as e:
         logger.warning(f"Lỗi đẩy ảnh lên GitHub: {e}")
 
-    # Cập nhật mã nguồn bài viết (app.js cho Website A Thành)
+    # 2. Cập nhật mã nguồn bài viết (app.js cho Website A Thành)
+    art_id = f"art-{int(time.time())}"
     if website == "athanh":
         try:
             get_js = requests.get(f"https://api.github.com/repos/{owner}/{repo_name}/contents/js/app.js", headers=headers)
@@ -385,10 +429,10 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
                 cur_js = base64.b64decode(js_data["content"]).decode("utf-8")
                 today_str = time.strftime("%d/%m/%Y")
                 new_item = {
-                    "id": f"art-{int(time.time())}",
+                    "id": art_id,
                     "title": article["title"],
                     "category": article["category"],
-                    "author": "A Thành BN",
+                    "author": draft.get("author", "A Thành BN"),
                     "createdAt": today_str,
                     "summary": article["summary"],
                     "image": img_repo_path,
@@ -397,25 +441,75 @@ def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
                 pattern = r"(const\s+ALL_SEO_ARTICLES\s*=\s*\[)"
                 new_js = re.sub(pattern, r"\1\n        " + json.dumps(new_item, ensure_ascii=False, indent=8) + ",\n", cur_js, count=1)
                 new_js_b64 = base64.b64encode(new_js.encode("utf-8")).decode("utf-8")
-                
+
                 put_js = {
-                    "message": f"Auto-Publish Article: {article['title']}",
+                    "message": f"Approved-Publish Article: {article['title']}",
                     "content": new_js_b64,
                     "sha": js_data["sha"],
                     "branch": "main"
                 }
                 requests.put(f"https://api.github.com/repos/{owner}/{repo_name}/contents/js/app.js", json=put_js, headers=headers, timeout=15)
-                logger.info(f"✓ Đã push bài viết mới '{article['title']}' lên {repo_name} thành công!")
+                logger.info(f"✓ Đã duyệt và đẩy bài viết '{article['title']}' lên {repo_name} thành công!")
         except Exception as e:
             logger.error(f"Lỗi cập nhật app.js trên GitHub: {e}")
 
+    # Xóa bản nháp sau khi đã xuất bản thành công
+    PENDING_DRAFTS.pop(draft_id, None)
+
     return {
-        "article": article,
-        "img_path": img_path,
-        "site_name": site_name,
-        "site_url": site_url,
-        "slug": slug
+        "status": "success",
+        "live_url": f"{draft['site_url']}#{art_id}",
+        "site_name": draft["site_name"],
+        "title": article["title"],
+        "category": article["category"],
+        "author": draft.get("author", "A Thành BN")
     }
+
+def auto_publish_workflow_sync(topic: str, website: str = "athanh") -> dict:
+    """Hàm phát hành tức thì (đã bao gồm soạn thảo và đẩy lên GitHub)."""
+    draft = prepare_publish_draft_sync(topic, website)
+    res = commit_publish_draft_to_github_sync(draft["draft_id"])
+    return {
+        "article": draft["article"],
+        "img_path": draft["img_path"],
+        "site_name": res["site_name"],
+        "site_url": res["live_url"],
+        "slug": draft["slug"]
+    }
+
+def generate_morning_briefing() -> tuple[str, InlineKeyboardMarkup]:
+    """Tạo bản tin sáng 1-chạm cho Chủ tịch Lê Minh Tân (Life Team Routine)."""
+    date_str = time.strftime("%d/%m/%Y")
+    cny_rate = 3615
+    text = (
+        f"🌅 **BẢN TIN KHỞI ĐỘNG NGÀY MỚI — CHỦ TỊCH LÊ MINH TÂN** ({date_str})\n\n"
+        f"Đội ngũ **Life Team & Business Agents** kính chúc Chủ tịch một ngày mới tràn đầy năng lượng và bứt phá doanh số!\n\n"
+        f"💱 **1. THỊ TRƯỜNG & TỶ GIÁ 1688 / CNY:**\n"
+        f"• Tỷ giá quy đổi tham khảo: **1 CNY = {cny_rate:,} VNĐ**\n"
+        f"• Kho Hoàng Thịnh (19/785 Nguyễn Khoái, Hoàng Mai): Tiếp nhận hàng 1688 liên tục, thông quan 3-5 ngày.\n\n"
+        f"⚡ **2. TỔNG KHO ĐIỆN BẮC NINH (549 NGÔ GIA TỰ):**\n"
+        f"• Chính sách thợ thầu: Dây Cadisun chiết khấu **5% - 15%** theo khối lượng, Dây Trần Phú **20% - 25%** (Tem QR chống giả 100%).\n"
+        f"• Kỹ sư A Thành & Hotline: **0904.511.227** sẵn sàng bóc tách dự toán BOQ sau 30 phút.\n\n"
+        f"📈 **3. Ý TƯỞNG CONTENT & SEO HÔM NAY:**\n"
+        f"• Bài viết gợi ý: *'Kinh nghiệm chọn dây cáp ngầm Cadisun Cu/XLPE/PVC/DSTA/PVC cho nhà xưởng KCN Quế Võ'*\n"
+        f"• TikTok 22s: *'Mẹo nhỏ bóc tách cuộn dây Cadisun thật - giả bằng mã QR ngay tại công trình'*\n\n"
+        f"🎯 **4. 3 MỤC TIÊU ƯU TIÊN TRONG NGÀY:**\n"
+        f"1. Soạn & duyệt 1 bài viết SEO thiết bị điện để kéo traffic vào website.\n"
+        f"2. Gửi bảng chiết khấu thợ thầu cho đối tác công trình tại Bắc Ninh.\n"
+        f"3. Khớp lịch chuyến xe gom hàng 1688 về kho Hà Nội.\n\n"
+        f"👇 *Chủ tịch chọn hành động nhanh 1-chạm dưới đây:*"
+    )
+    keyboard = [
+        [
+            InlineKeyboardButton("📝 Soạn Bài Cadisun Mới", callback_data="act_cadisun"),
+            InlineKeyboardButton("📊 Báo Cáo Em Vi", callback_data="act_report")
+        ],
+        [
+            InlineKeyboardButton("🔥 War-Room Dòng Tiền", callback_data="act_warroom"),
+            InlineKeyboardButton("🌐 Xem Web A Thành", url="http://thietbidien-bacninh.com")
+        ]
+    ]
+    return text, InlineKeyboardMarkup(keyboard)
 def get_render_font(size=32):
     from PIL import ImageFont
     candidates = [
@@ -617,7 +711,7 @@ def generate_image_sync(prompt: str) -> tuple[str, str]:
         f"⚡ **BẢNG ĐIỀU HƯỚNG WORKFLOW 1-CHẠM:**\n"
         f"• Gõ **`!quote`** : Tính giá cước vận chuyển 1688 trọn gói.\n"
         f"• Gõ **`!traffic`**: Xuất 3 bài đăng mạng xã hội (FB / Zalo / Threads).\n"
-        f"• Gõ **`boq`**    : Bóc tách chiết khấu cáp Cadisun / Trần Phú 30-35%.\n"
+        f"• Gõ **`boq`**    : Bóc tách chiết khấu cáp Cadisun / Trần Phú 5% - 15%.\n"
         f"• Gõ **`!video`**  : Xuất kịch bản TikTok 22s kèm phụ đề SRT."
     )
     return out_path, caption
@@ -633,12 +727,13 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Bộ Ba Tác Chiến **Zelly × Itan × Em Vi** đang trực chiến **24/7 trên Đám Mây Render Cloud**.\n\n"
             "🛡️ **Quyền Hạn:** `SUPER_ADMIN` (Đã bảo mật tuyệt đối 100%)\n\n"
             "⚡ **Lệnh 1-chạm tối cao:**\n"
-            "• Gõ **`báo cáo`** (hoặc `!vi`): Em Vi xuất báo cáo tài chính & 3 việc ưu tiên.\n"
-            "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược dòng tiền.\n"
+            "• Gõ **`/morning`** (hoặc `chào buổi sáng`): Life Team xuất bản tin ngày mới kèm tỷ giá CNY & 3 việc ưu tiên.\n"
+            "• Gõ **`báo cáo`** (hoặc `!vi`): Em Vi xuất báo cáo tài chính & đồng hồ dòng tiền.\n"
+            "• Gõ **`war-room`**: Triệu tập Zelly và Itan họp chiến lược doanh thu.\n"
             "• Gõ **`traffic`**: Xuất 3 chiến dịch kéo traffic đa kênh tức thì.\n"
-            "• Gõ **`boq`**: Tra cứu chiết khấu vật tư điện Duy Phong Bắc Ninh.\n"
+            "• Gõ **`boq`**: Tra cứu bảng chiết khấu thợ thầu Duy Phong Bắc Ninh.\n"
             "• Gõ **`/image <mô tả>`**: Tạo ảnh AI Luxury Black & Gold tức thì.\n"
-            "• Gõ **`/publish <chủ đề>`** (hoặc `đăng bài: <chủ đề> | web: <tên>`): Tự động viết bài chuẩn SEO, tạo ảnh và đăng thẳng lên Website!\n\n"
+            "• Gõ **`/publish <chủ đề>`** (hoặc `đăng bài: <chủ đề>`): Content AI soạn bài + banner Luxury gửi duyệt 1-chạm trước khi lên web!\n\n"
             "Chủ tịch có thể tắt máy tính đi ngủ, bot vẫn luôn túc trực trên điện thoại của anh 24/24!"
         )
     else:
@@ -691,6 +786,17 @@ async def handle_image_command(update: Update, context: ContextTypes.DEFAULT_TYP
         prompt = "Container Hoang Thinh Logistics cap ben kho Ha Noi"
     await handle_image_generation(update, prompt)
 
+async def handle_morning_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Trợ lý Life Team xuất bản tin ngày mới cho Chủ tịch Tân."""
+    if not update.message:
+        return
+    user = update.effective_user
+    if not is_admin(user.id):
+        await update.message.reply_text("🔒 *Bản tin điều hành sáng chỉ dành riêng cho Chủ tịch Lê Minh Tân.*", parse_mode="Markdown")
+        return
+    text, markup = generate_morning_briefing()
+    await update.message.reply_text(text, reply_markup=markup, parse_mode="Markdown")
+
 async def handle_publish_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
@@ -712,41 +818,134 @@ async def handle_publish_command(update: Update, context: ContextTypes.DEFAULT_T
         topic = "Kinh nghiệm chọn thiết bị điện cao cấp cho biệt thự và nhà phố"
 
     status_msg = await update.message.reply_text(
-        f"🚀 *Chủ tịch đã ra lệnh xuất bản! Hội đồng Zelly × Itan đang tự động:*\n"
-        f"1. Viết bài chuẩn SEO bằng Gemini AI\n"
-        f"2. Tạo ảnh nhận diện Luxury Black & Gold\n"
-        f"3. Cập nhật mã nguồn & đẩy thẳng lên GitHub Pages (`{website}`)...\n\n"
-        f"⏳ *Vui lòng đợi khoảng 15-20 giây...*",
+        f"🎨 *Nhận lệnh Chủ tịch! Đội ngũ Content AI đang tự động:*\n"
+        f"1. Viết bài chuyên sâu chuẩn SEO bằng Gemini AI\n"
+        f"2. Thiết kế banner Luxury Black & Gold (#0B0F17 & #D4AF37)\n"
+        f"3. Khởi tạo bản nháp gửi Chủ tịch phê duyệt 1-chạm trước khi xuất bản...\n\n"
+        f"⏳ *Vui lòng đợi khoảng 10-15 giây...*",
         parse_mode="Markdown"
     )
     await update.message.chat.send_action("upload_photo")
 
     loop = asyncio.get_running_loop()
-    res = await loop.run_in_executor(None, auto_publish_workflow_sync, topic, website)
+    draft = await loop.run_in_executor(None, prepare_publish_draft_sync, topic, website)
 
-    art = res["article"]
+    art = draft["article"]
     caption = (
-        f"🚀 **ĐÃ TỰ ĐỘNG VIẾT BÀI & ĐĂNG LÊN WEBSITE THÀNH CÔNG!**\n\n"
-        f"🌐 **Website:** {res['site_name']}\n"
-        f"🔗 **Link xem:** {res['site_url']}\n"
+        f"📋 **BẢN NHÁP BÀI VIẾT & BANNER CHỜ PHÊ DUYỆT (APPROVAL BOUNDARY)**\n\n"
+        f"🌐 **Website đích:** {draft['site_name']}\n"
         f"📰 **Tiêu đề:** {art['title']}\n"
         f"🏷️ **Chuyên mục:** {art['category']}\n"
+        f"👤 **Tác giả:** {draft['author']}\n"
         f"📝 **Tóm tắt:** {art['summary']}\n\n"
-        f"⚡ **GỢI Ý HÀNH ĐỘNG TIẾP THEO CHO CHỦ TỊCH:**\n"
-        f"• Link bài viết đã online trên GitHub Pages, Chủ tịch có thể chia sẻ lên Zalo/Facebook để kéo khách!\n"
-        f"• Gõ `!traffic` để xuất thêm 3 kịch bản video TikTok tương ứng."
+        f"🛡️ **CƠ CHẾ BẢO MẬT PHÊ DUYỆT 1-CHẠM:**\n"
+        f"• Bản nháp này **CHƯA ĐƯỢC ĐĂNG** lên website ngoài.\n"
+        f"• Chủ tịch duyệt nội dung & ảnh bên dưới, nếu ưng ý xin bấm nút để hệ thống đẩy live lên GitHub Pages!"
     )
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ DUYỆT ĐĂNG NGAY LÊN WEB", callback_data=f"approve_draft:{draft['draft_id']}"),
+            InlineKeyboardButton("❌ HỦY BỎ BẢN NHÁP", callback_data=f"cancel_draft:{draft['draft_id']}")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     try:
-        with open(res["img_path"], "rb") as photo_file:
-            await update.message.reply_photo(photo=photo_file, caption=caption, parse_mode="Markdown")
+        with open(draft["img_path"], "rb") as photo_file:
+            await update.message.reply_photo(photo=photo_file, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
         try:
             await status_msg.delete()
         except Exception:
             pass
     except Exception as e:
-        logger.error(f"Lỗi gửi thông báo xuất bản: {e}")
-        await update.message.reply_text(caption, parse_mode="Markdown")
+        logger.error(f"Lỗi gửi bản nháp xuất bản: {e}")
+        await update.message.reply_text(caption, reply_markup=reply_markup, parse_mode="Markdown")
+
+async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Xử lý các nút bấm Inline Keyboard phê duyệt (Approval Boundaries)."""
+    query = update.callback_query
+    await query.answer()
+    user = query.from_user
+
+    if not is_admin(user.id):
+        await query.message.reply_text("🔒 *Chỉ Chủ tịch Lê Minh Tân mới có quyền phê duyệt tác vụ này.*", parse_mode="Markdown")
+        return
+
+    data = query.data or ""
+    if data.startswith("approve_draft:"):
+        draft_id = data.split("approve_draft:")[1]
+        if draft_id not in PENDING_DRAFTS:
+            await query.message.reply_text("⚠️ *Bản nháp đã hết hạn hoặc đã được xử lý trước đó.*", parse_mode="Markdown")
+            return
+        
+        draft = PENDING_DRAFTS[draft_id]
+        status_msg = await query.message.reply_text(f"⏳ *Đang tiến hành đẩy bài viết và ảnh lên GitHub Pages ({draft['repo_name']})...*", parse_mode="Markdown")
+        
+        loop = asyncio.get_running_loop()
+        res = await loop.run_in_executor(None, commit_publish_draft_to_github_sync, draft_id)
+        
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass
+
+        confirm_text = (
+            f"🚀 **ĐÃ PHÊ DUYỆT & XUẤT BẢN THÀNH CÔNG LÊN WEBSITE!**\n\n"
+            f"🌐 **Website:** {res['site_name']}\n"
+            f"🔗 **Link xem bài viết:** {res['live_url']}\n"
+            f"📰 **Tiêu đề:** {res['title']}\n"
+            f"🏷️ **Chuyên mục:** {res['category']}\n"
+            f"👤 **Tác giả:** {res.get('author', 'A Thành BN')}\n\n"
+            f"⚡ *Bài viết & Banner đồ họa đã online trực tiếp trên GitHub Pages. Chủ tịch có thể bấm vào link xem và chia sẻ ngay!*"
+        )
+        try:
+            await query.edit_message_caption(caption=confirm_text, parse_mode="Markdown")
+        except Exception:
+            await query.message.reply_text(confirm_text, parse_mode="Markdown")
+
+    elif data.startswith("cancel_draft:"):
+        draft_id = data.split("cancel_draft:")[1]
+        if draft_id in PENDING_DRAFTS:
+            del PENDING_DRAFTS[draft_id]
+        cancel_text = "❌ **BẢN NHÁP ĐÃ ĐƯỢC HỦY BỎ THEO LỆNH CHỦ TỊCH.**"
+        try:
+            await query.edit_message_caption(caption=cancel_text, parse_mode="Markdown")
+        except Exception:
+            await query.message.reply_text(cancel_text, parse_mode="Markdown")
+
+    elif data == "act_cadisun":
+        status_msg = await query.message.reply_text("📝 *Life & Content Team đang khởi tạo bản nháp bài viết về Dây Cáp Điện Cadisun...*", parse_mode="Markdown")
+        loop = asyncio.get_running_loop()
+        draft = await loop.run_in_executor(None, prepare_publish_draft_sync, "Kinh nghiệm chọn dây cáp điện Cadisun chính hãng chống hàng giả cho thầu thợ Bắc Ninh", "athanh")
+        art = draft["article"]
+        caption = (
+            f"📋 **BẢN NHÁP CADISUN CHỜ PHÊ DUYỆT (APPROVAL BOUNDARY)**\n\n"
+            f"🌐 **Website:** {draft['site_name']}\n"
+            f"📰 **Tiêu đề:** {art['title']}\n"
+            f"🏷️ **Chuyên mục:** {art['category']}\n"
+            f"📝 **Tóm tắt:** {art['summary']}\n\n"
+            f"🛡️ *Chủ tịch bấm nút bên dưới để duyệt đăng ngay:*"
+        )
+        keyboard = [
+            [
+                InlineKeyboardButton("✅ DUYỆT ĐĂNG NGAY LÊN WEB", callback_data=f"approve_draft:{draft['draft_id']}"),
+                InlineKeyboardButton("❌ HỦY BỎ BẢN NHÁP", callback_data=f"cancel_draft:{draft['draft_id']}")
+            ]
+        ]
+        try:
+            await status_msg.delete()
+        except Exception:
+            pass
+        with open(draft["img_path"], "rb") as f:
+            await query.message.reply_photo(photo=f, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+
+    elif data == "act_report":
+        report_text = generate_ai_response("báo cáo", user.first_name)
+        await query.message.reply_text(report_text, parse_mode="Markdown")
+
+    elif data == "act_warroom":
+        war_text = generate_ai_response("war-room", user.first_name)
+        await query.message.reply_text(war_text, parse_mode="Markdown")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
@@ -784,6 +983,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 2. XỬ LÝ THEO PHÂN QUYỀN (ADMIN VS KHÁCH NGOÀI)
     # ==========================================================================
     if is_admin(user.id):
+        # ADMIN: Kiểm tra lệnh chào buổi sáng / Life Team Routine
+        if any(k in lower_text for k in ["chào buổi sáng", "chao buoi sang", "buổi sáng", "buoi sang", "morning", "khởi động ngày mới", "khoi dong ngay moi", "lịch trình"]):
+            text, markup = generate_morning_briefing()
+            await update.message.reply_text(text, reply_markup=markup, parse_mode="Markdown")
+            return
+
         # ADMIN: Kiểm tra tạo ảnh tự nhiên
         if any(lower_text.startswith(prefix) for prefix in ["tạo ảnh", "tao anh", "vẽ ảnh", "ve anh", "vẽ ", "ve ", "ảnh:"]):
             prompt = user_text
@@ -796,7 +1001,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await handle_image_generation(update, prompt)
             return
 
-        # ADMIN: Kiểm tra lệnh tự động viết bài và đăng website
+        # ADMIN: Kiểm tra lệnh tự động viết bài và chuẩn bị bản nháp phê duyệt (Approval Boundary)
         if any(lower_text.startswith(prefix) for prefix in ["đăng bài", "dang bai", "viết bài", "viet bai", "xuất bản", "xuat ban", "đăng web", "dang web"]):
             topic_str = user_text
             for prefix in ["đăng bài:", "dang bai:", "đăng bài", "dang bai", "viết bài:", "viet bai:", "viết bài", "viet bai", "xuất bản:", "xuat ban:", "đăng web:", "dang web:"]:
@@ -820,36 +1025,45 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 topic_str = "Kinh nghiệm chọn thiết bị điện cao cấp cho biệt thự và nhà phố"
 
             status_msg = await update.message.reply_text(
-                f"🚀 *Nhận lệnh Chủ tịch! Hội đồng Zelly × Itan đang tự động:*\n"
+                f"🎨 *Nhận lệnh Chủ tịch! Đội ngũ Content AI đang tự động:*\n"
                 f"1. Viết bài chuyên sâu chuẩn SEO bằng Gemini AI\n"
-                f"2. Tạo ảnh nhận diện Luxury Black & Gold\n"
-                f"3. Cập nhật mã nguồn & push thẳng lên GitHub Pages (`{website}`)...\n\n"
-                f"⏳ *Vui lòng đợi khoảng 15-20 giây...*",
+                f"2. Thiết kế banner Luxury Black & Gold (#0B0F17 & #D4AF37)\n"
+                f"3. Khởi tạo bản nháp gửi Chủ tịch phê duyệt 1-chạm trước khi xuất bản...\n\n"
+                f"⏳ *Vui lòng đợi khoảng 10-15 giây...*",
                 parse_mode="Markdown"
             )
             await update.message.chat.send_action("upload_photo")
             loop = asyncio.get_running_loop()
-            res = await loop.run_in_executor(None, auto_publish_workflow_sync, topic_str, website)
-            art = res["article"]
+            draft = await loop.run_in_executor(None, prepare_publish_draft_sync, topic_str, website)
+            art = draft["article"]
             caption = (
-                f"🚀 **ĐÃ TỰ ĐỘNG VIẾT BÀI & ĐĂNG LÊN WEBSITE THÀNH CÔNG!**\n\n"
-                f"🌐 **Website:** {res['site_name']}\n"
-                f"🔗 **Link xem:** {res['site_url']}\n"
+                f"📋 **BẢN NHÁP BÀI VIẾT & BANNER CHỜ PHÊ DUYỆT (APPROVAL BOUNDARY)**\n\n"
+                f"🌐 **Website đích:** {draft['site_name']}\n"
                 f"📰 **Tiêu đề:** {art['title']}\n"
                 f"🏷️ **Chuyên mục:** {art['category']}\n"
+                f"👤 **Tác giả:** {draft['author']}\n"
                 f"📝 **Tóm tắt:** {art['summary']}\n\n"
-                f"⚡ *Link bài viết đã cập nhật trực tiếp trên website. Chủ tịch có thể gửi ngay cho đối tác/thợ thầu!*"
+                f"🛡️ **CƠ CHẾ BẢO MẬT PHÊ DUYỆT 1-CHẠM:**\n"
+                f"• Bản nháp này **CHƯA ĐƯỢC ĐĂNG** lên website ngoài.\n"
+                f"• Chủ tịch duyệt nội dung & ảnh bên dưới, nếu ưng ý xin bấm nút để hệ thống đẩy live lên GitHub Pages!"
             )
+            keyboard = [
+                [
+                    InlineKeyboardButton("✅ DUYỆT ĐĂNG NGAY LÊN WEB", callback_data=f"approve_draft:{draft['draft_id']}"),
+                    InlineKeyboardButton("❌ HỦY BỎ BẢN NHÁP", callback_data=f"cancel_draft:{draft['draft_id']}")
+                ]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
             try:
-                with open(res["img_path"], "rb") as photo_file:
-                    await update.message.reply_photo(photo=photo_file, caption=caption, parse_mode="Markdown")
+                with open(draft["img_path"], "rb") as photo_file:
+                    await update.message.reply_photo(photo=photo_file, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
                 try:
                     await status_msg.delete()
                 except Exception:
                     pass
             except Exception as e:
-                logger.error(f"Lỗi gửi thông báo xuất bản: {e}")
-                await update.message.reply_text(caption, parse_mode="Markdown")
+                logger.error(f"Lỗi gửi bản nháp xuất bản: {e}")
+                await update.message.reply_text(caption, reply_markup=reply_markup, parse_mode="Markdown")
             return
 
         # ADMIN: Toàn quyền truy cập phản hồi hệ thống
@@ -1101,6 +1315,8 @@ async def run_telegram_bot():
     bot_application.add_handler(CommandHandler("draw", handle_image_command))
     bot_application.add_handler(CommandHandler("publish", handle_publish_command))
     bot_application.add_handler(CommandHandler("post", handle_publish_command))
+    bot_application.add_handler(CommandHandler("morning", handle_morning_command))
+    bot_application.add_handler(CallbackQueryHandler(handle_callback_query))
     bot_application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     await bot_application.initialize()
