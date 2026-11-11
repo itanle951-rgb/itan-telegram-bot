@@ -1,0 +1,198 @@
+{
+  "system": "Website A Thành - Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh",
+  "domain": "http://thietbidien-bacninh.com",
+  "github_repo": "https://github.com/itanle951-rgb/thietbidien-bacninh",
+  "raw_base_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main",
+  "total_photos": 22,
+  "last_updated": "2026-11-11",
+  "categories": [
+    "Dây Cáp Cadisun Chính Hãng",
+    "Dây Cáp Trần Phú Chính Hãng",
+    "Aptomat & Tủ Điện Chống Giật",
+    "Ống Luồn Dây & Đế Âm Nanoco",
+    "Thiết Bị Điện & Quạt Panasonic",
+    "Không Gian Kho & Cửa Hàng Thực Tế"
+  ],
+  "photos": [
+    {
+      "id": "img-cadisun-01",
+      "name": "Dây điện đơn Cadisun VCs chính hãng",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["cadisun", "dây đơn", "dây cadisun", "cuộn cadisun", "vcs", "chiết khấu"],
+      "rel_path": "assets/images/products/day-don-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-don-cadisun.jpg",
+      "description": "Ảnh cuộn dây đơn Cadisun ruột đồng nguyên chất có tem chống hàng giả QR code"
+    },
+    {
+      "id": "img-cadisun-02",
+      "name": "Dây cáp điện đôi Cadisun VCmd",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["cadisun đôi", "dây đôi", "dây dẹp", "vcmd", "cadisun 2x"],
+      "rel_path": "assets/images/products/day-doi-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-doi-cadisun.jpg",
+      "description": "Ảnh cuộn dây điện đôi Cadisun bọc nhựa PVC nguyên sinh chống cháy"
+    },
+    {
+      "id": "img-cadisun-03",
+      "name": "Cáp đồng mềm Cadisun VCmd tròn",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["cáp mềm", "cadisun mềm", "dây tròn", "dây nguồn"],
+      "rel_path": "assets/images/products/cap-mem-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-mem-cadisun.jpg",
+      "description": "Ảnh cuộn cáp tròn mềm Cadisun lõi nhiều sợi mềm dẻo"
+    },
+    {
+      "id": "img-cadisun-04",
+      "name": "Cáp điện lực Cu/PVC Cadisun CV",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["cáp lực", "cáp cv", "cáp điện lực", "trục tổng", "cadisun cv"],
+      "rel_path": "assets/images/products/cap-cv-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-cv-cadisun.jpg",
+      "description": "Ảnh cuộn cáp điện lực Cadisun CV trục tổng nhà xưởng và công trình"
+    },
+    {
+      "id": "img-cadisun-05",
+      "name": "Cáp ngầm trung và hạ thế Cadisun",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["cáp ngầm", "chôn ngầm", "dsta", "cadisun ngầm", "nhà xưởng", "kcn"],
+      "rel_path": "assets/images/products/cap-ngam-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-ngam-cadisun.jpg",
+      "description": "Ảnh lô cáp ngầm bọc giáp kim loại chống chuột cắn Cadisun cho KCN Quế Võ, Yên Phong"
+    },
+    {
+      "id": "img-cadisun-06",
+      "name": "Cáp 3 pha 4 lõi Cadisun hạ thế",
+      "category": "Dây Cáp Cadisun Chính Hãng",
+      "keywords": ["3 pha", "4 lõi", "cáp 3 pha", "điện công nghiệp", "kcn"],
+      "rel_path": "assets/images/products/cap-3pha-4loi-cadisun.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-3pha-4loi-cadisun.jpg",
+      "description": "Ảnh cáp điện 3 pha 4 lõi phục vụ tủ điện công nghiệp xưởng sản xuất"
+    },
+    {
+      "id": "img-tranphu-01",
+      "name": "Dây điện đơn Trần Phú chính hãng",
+      "category": "Dây Cáp Trần Phú Chính Hãng",
+      "keywords": ["trần phú", "dây trần phú", "dây đơn trần phú", "vcm trần phú"],
+      "rel_path": "assets/images/products/day-don-tran-phu.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-don-tran-phu.jpg",
+      "description": "Ảnh cuộn dây đơn Trần Phú có tem cào phủ mã an ninh QR code"
+    },
+    {
+      "id": "img-tranphu-02",
+      "name": "Dây cáp điện đôi dẹp Trần Phú",
+      "category": "Dây Cáp Trần Phú Chính Hãng",
+      "keywords": ["trần phú đôi", "dây đôi trần phú", "vcmd trần phú"],
+      "rel_path": "assets/images/products/day-doi-tran-phu.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-doi-tran-phu.jpg",
+      "description": "Ảnh dây đôi mềm Trần Phú chuyên đi nổi và đi ống âm tường nhà dân"
+    },
+    {
+      "id": "img-tranphu-03",
+      "name": "Dây mạng mạng Cat6 Trần Phú",
+      "category": "Dây Cáp Trần Phú Chính Hãng",
+      "keywords": ["dây mạng", "cat6", "cáp mạng", "trần phú mạng", "internet"],
+      "rel_path": "assets/images/products/day-mang-tran-phu.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-mang-tran-phu.jpg",
+      "description": "Ảnh thùng cáp mạng Cat6 Trần Phú lõi đồng truyền dẫn tín hiệu tốc độ cao"
+    },
+    {
+      "id": "img-schneider-01",
+      "name": "Aptomat MCB tép Schneider công nghiệp",
+      "category": "Aptomat & Tủ Điện Chống Giật",
+      "keywords": ["aptomat", "mcb", "schneider", "át tép", "bảo vệ quá tải"],
+      "rel_path": "assets/images/products/aptomat-mcb-schneider.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/aptomat-mcb-schneider.jpg",
+      "description": "Ảnh thiết bị đóng cắt MCB Schneider độ nhạy cao ngắt ngắn mạch tức thì"
+    },
+    {
+      "id": "img-schneider-02",
+      "name": "Aptomat chống dòng rò RCBO Schneider 30mA",
+      "category": "Aptomat & Tủ Điện Chống Giật",
+      "keywords": ["rcbo", "chống giật", "aptomat chống giật", "bình nóng lạnh", "an toàn điện"],
+      "rel_path": "assets/images/products/aptomat-rcbo-schneider.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/aptomat-rcbo-schneider.jpg",
+      "description": "Ảnh Aptomat RCBO chống rò chống giật 30mA tích hợp bảo vệ quá tải cho phòng tắm"
+    },
+    {
+      "id": "img-scene-tudien",
+      "name": "Hệ thống tủ điện âm tường chống giật gia đình",
+      "category": "Aptomat & Tủ Điện Chống Giật",
+      "keywords": ["tủ điện", "tủ tổng", "lắp tủ điện", "sơ đồ tủ điện", "chống sét"],
+      "rel_path": "assets/images/tu-dien-chong-giat-gia-dinh.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/tu-dien-chong-giat-gia-dinh.jpg",
+      "description": "Ảnh tủ điện gia đình nhiều tầng đã lắp đặt hoàn thiện phân vùng tải"
+    },
+    {
+      "id": "img-scene-thicong",
+      "name": "Thi công điện âm tường nhà phố Bắc Ninh",
+      "category": "Ống Luồn Dây & Đế Âm Nanoco",
+      "keywords": ["thi công", "âm tường", "ống luồn", "xây nhà", "nhà phố", "tiết diện"],
+      "rel_path": "assets/images/thi-cong-dien-am-tuong-nha-pho.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/thi-cong-dien-am-tuong-nha-pho.jpg",
+      "description": "Ảnh thực tế công trình đục tường đi ống luồn ruột gà và dây điện chuẩn kỹ thuật"
+    },
+    {
+      "id": "img-scene-dutoan",
+      "name": "Bảng bóc tách dự toán vật tư điện nhà phố",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["dự toán", "boq", "báo giá", "bảng giá", "vật tư", "chiết khấu"],
+      "rel_path": "assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
+      "description": "Ảnh hồ sơ bản vẽ thiết kế bóc tách khối lượng vật tư công trình trọn gói"
+    },
+    {
+      "id": "img-scene-kho",
+      "name": "Kho hàng dây cáp điện Duy Phong Bắc Ninh",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["kho", "tổng kho", "kho duy phong", "kho hàng", "dây cáp", "ngô gia tự"],
+      "rel_path": "assets/images/kho-day-cap-thiet-bi.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg",
+      "description": "Ảnh thực tế bên trong tổng kho Duy Phong xếp hàng trăm cuộn dây Cadisun và Trần Phú"
+    },
+    {
+      "id": "img-scene-cuahang",
+      "name": "Mặt tiền Tổng Kho Duy Phong 549 Ngô Gia Tự",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["cửa hàng", "mặt tiền", "duy phong", "549 ngô gia tự", "bắc ninh", "a thành"],
+      "rel_path": "assets/images/cua-hang-mat-tien.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/cua-hang-mat-tien.jpg",
+      "description": "Ảnh mặt tiền biển hiệu Tổng Kho Thiết Bị Điện Duy Phong tại 549 Ngô Gia Tự, TP. Bắc Ninh"
+    },
+    {
+      "id": "img-nanoco-01",
+      "name": "Ống ruột gà chống cháy Nanoco",
+      "category": "Ống Luồn Dây & Đế Âm Nanoco",
+      "keywords": ["ống luồn", "ruột gà", "nanoco", "chống cháy", "luồn dây"],
+      "rel_path": "assets/images/products/ong-ruot-ga-nanoco.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/ong-ruot-ga-nanoco.jpg",
+      "description": "Ảnh cuộn ống ruột gà đàn hồi chống dập chống cháy Nanoco"
+    },
+    {
+      "id": "img-nanoco-02",
+      "name": "Đế âm tường đơn đôi Nanoco chống cháy",
+      "category": "Ống Luồn Dây & Đế Âm Nanoco",
+      "keywords": ["đế âm", "đế đơn", "đế đôi", "hộp đế âm", "nanoco"],
+      "rel_path": "assets/images/products/de-am-tuong-nanoco.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/de-am-tuong-nanoco.jpg",
+      "description": "Ảnh đế âm tường chống cháy cho công tắc ổ cắm chôn âm gạch"
+    },
+    {
+      "id": "img-nanoco-03",
+      "name": "Ống luồn dây điện PVC thẳng cứng",
+      "category": "Ống Luồn Dây & Đế Âm Nanoco",
+      "keywords": ["ống cứng", "ống thẳng", "pvc", "d16", "d20", "chịu lực"],
+      "rel_path": "assets/images/products/ong-cung-luon-day-pvc.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/ong-cung-luon-day-pvc.jpg",
+      "description": "Ảnh cây ống cứng PVC luồn dây điện âm sàn bê tông chịu lực cao"
+    },
+    {
+      "id": "img-panasonic-01",
+      "name": "Quạt trần 5 cánh Panasonic cao cấp",
+      "category": "Thiết Bị Điện & Quạt Panasonic",
+      "keywords": ["quạt trần", "panasonic", "làm mát", "nội thất", "thiết bị điện"],
+      "rel_path": "assets/images/products/quat-tran-panasonic.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/quat-tran-panasonic.jpg",
+      "description": "Ảnh quạt trần 5 cánh Panasonic điều khiển từ xa cho biệt thự nhà phố"
+    }
+  ]
+}
