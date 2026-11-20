@@ -673,7 +673,7 @@ def wrap_render_lines(text, font, max_width, draw):
     return lines
 
 def find_best_photo_from_library(query: str, exclude_urls: list[str] = None) -> tuple[str, str]:
-    """Tìm ảnh thực tế phù hợp từ photo_library.json và TỰ ĐỘNG XOAY VÒNG chống trùng lặp.
+    """Tìm ảnh thực tế ĐÚNG CHỦ ĐỀ từ photo_library.json (cách ly theo nhóm ngành hàng + xoay vòng chống trùng).
     Trả về (image_url, category_name)
     """
     query_lower = (query or "").lower()
@@ -686,32 +686,50 @@ def find_best_photo_from_library(query: str, exclude_urls: list[str] = None) -> 
         hist = load_publish_history()
         recent_used = set(hist.get("recent_photos", [])[-12:])
 
+    domain_rules = [
+        ("Đèn LED", ["đèn led", "âm trần", "downlight", "rạng đông", "mắt trâu", "bán nguyệt", "highbay", "ốp tường", "ốp trần", "chiếu sáng", "ánh sáng"]),
+        ("Công Tắc & Ổ Cắm", ["công tắc", "ổ cắm", "brenna", "vanni", "goneo", "hạt mạng", "mặt 1 lỗ", "mặt 2 lỗ", "mặt 3 lỗ"]),
+        ("Aptomat & Tủ Điện", ["aptomat", "rcbo", "mcb", "mccb", "khởi động từ", "contactor", "tủ điện", "vỏ tủ", "át tổng", "át cài", "át khối", "chống giật"]),
+        ("Ống Luồn Dây", ["ống ghen", "ống luồn", "ruột gà", "đế âm", "sp 20", "nanoco"]),
+        ("Quạt Trần", ["quạt trần", "quạt hút", "thông gió"]),
+        ("Dây Cáp", ["cadisun", "trần phú", "cadivi", "dây cáp", "dây điện", "dây dẫn", "tiết diện", "cáp ngầm", "cáp 3 pha"]),
+    ]
+    matched_cat_prefixes = [
+        cat_prefix for cat_prefix, kws in domain_rules
+        if any(k in query_lower for k in kws)
+    ]
+
     if lib_path.exists():
         try:
             with open(lib_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             photos = data.get("photos", [])
             if photos:
-                scored = []
-                for p in photos:
-                    url = p.get("raw_url", "")
-                    score = sum(1 for kw in p.get("keywords", []) if kw.lower() in query_lower)
-                    cat = (p.get("category") or "").lower()
-                    if cat and any(w in query_lower for w in cat.split()):
-                        score += 1
-                    scored.append((score, url in recent_used, p))
+                if matched_cat_prefixes:
+                    domain_photos = [
+                        item_p for item_p in photos
+                        if any((item_p.get("category") or "").startswith(pref) for pref in matched_cat_prefixes)
+                    ]
+                    if domain_photos:
+                        photos = domain_photos
 
-                # Ưu tiên các ảnh CHƯA DÙNG gần đây
+                scored = []
+                for item_p in photos:
+                    url = item_p.get("raw_url", "")
+                    score = sum(len(kw) for kw in item_p.get("keywords", []) if kw.lower() in query_lower)
+                    scored.append((score, url in recent_used, item_p))
+
                 fresh = [item for item in scored if not item[1]]
                 pool = fresh if fresh else scored
 
                 max_score = max(item[0] for item in pool)
                 if max_score > 0:
-                    # Lấy nhóm top candidates có điểm sát nhau để xoay vòng tự nhiên
-                    top_candidates = [item[2] for item in pool if item[0] >= max(1, max_score - 1)]
-                else:
-                    # Không khớp từ khóa mạnh -> chọn ngẫu nhiên trong các ảnh mới chưa dùng
+                    top_candidates = [item[2] for item in pool if item[0] >= max(1, int(max_score * 0.7))]
+                elif matched_cat_prefixes:
                     top_candidates = [item[2] for item in pool]
+                else:
+                    scene_pool = [item[2] for item in pool if "Kho & Cửa Hàng" in (item[2].get("category") or "")]
+                    top_candidates = scene_pool if scene_pool else [item[2] for item in pool]
 
                 chosen = random.choice(top_candidates)
                 chosen_url = chosen.get("raw_url")
@@ -720,7 +738,6 @@ def find_best_photo_from_library(query: str, exclude_urls: list[str] = None) -> 
         except Exception as e:
             logger.warning(f"Lỗi đọc photo_library.json: {e}")
 
-    # Mặc định ảnh kho dây cáp thiết bị Duy Phong
     fallback_url = "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg"
     record_publish_history(photo_url=fallback_url)
     return fallback_url, "Tổng Kho Duy Phong"
