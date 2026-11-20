@@ -1769,6 +1769,51 @@ async def trigger_briefing(key: str = ""):
     res = await run_reliable_briefing_pipeline(bot_application.bot, 7574870612, force=True)
     return JSONResponse(content=res)
 
+@api.get("/publish/trigger")
+async def trigger_publish_draft(key: str = "", topic: str = "", website: str = "athanh"):
+    """Kích hoạt từ xa quy trình tạo bài SEO + Banner chống trùng lặp và gửi bản nháp duyệt 1-chạm qua Telegram."""
+    if key not in ADMIN_SECRET_KEYS:
+        return JSONResponse(status_code=403, content={"error": "Yêu cầu khóa bảo mật admin (?key=...)"})
+    if not bot_application or not bot_application.bot:
+        return JSONResponse(status_code=503, content={"error": "Bot Telegram chưa khởi động"})
+
+    loop = asyncio.get_running_loop()
+    draft = await loop.run_in_executor(None, prepare_publish_draft_sync, topic, website)
+    art = draft["article"]
+    caption = (
+        f"📋 **BẢN NHÁP BÀI VIẾT & BANNER CHỜ PHÊ DUYỆT (APPROVAL BOUNDARY)**\n\n"
+        f"🌐 **Website đích:** {draft['site_name']}\n"
+        f"📰 **Tiêu đề:** {art['title']}\n"
+        f"🏷️ **Chuyên mục:** {art['category']}\n"
+        f"👤 **Tác giả:** {draft['author']}\n"
+        f"📝 **Tóm tắt:** {art['summary']}\n\n"
+        f"🛡️ **CƠ CHẾ BẢO MẬT PHÊ DUYỆT 1-CHẠM:**\n"
+        f"• Bản nháp này **CHƯA ĐƯỢC ĐĂNG** lên website ngoài.\n"
+        f"• Chủ tịch duyệt nội dung & ảnh bên dưới, nếu ưng ý xin bấm nút để hệ thống đẩy live lên GitHub Pages!"
+    )
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ DUYỆT ĐĂNG NGAY LÊN WEB", callback_data=f"approve_draft:{draft['draft_id']}"),
+            InlineKeyboardButton("❌ HỦY BỎ BẢN NHÁP", callback_data=f"cancel_draft:{draft['draft_id']}")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    with open(draft["img_path"], "rb") as photo_file:
+        await bot_application.bot.send_photo(
+            chat_id=7574870612,
+            photo=photo_file,
+            caption=caption,
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+    return JSONResponse(content={
+        "status": "sent_to_telegram",
+        "draft_id": draft["draft_id"],
+        "topic": draft["topic"],
+        "title": art["title"],
+        "category": art["category"]
+    })
+
 @api.get("/briefing/status")
 async def get_briefing_status():
     """Xem trạng thái Sổ cái Ledger và Bookmarks động."""
