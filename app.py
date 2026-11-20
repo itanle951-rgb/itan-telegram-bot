@@ -8,8 +8,9 @@ import json
 import re
 from pathlib import Path
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from google import genai
@@ -321,6 +322,43 @@ CONTENT_ANGLES = [
     "Chia sẻ kinh nghiệm thực chiến từ công trình đã bàn giao tại Bắc Ninh"
 ]
 
+def load_brand_facts() -> dict:
+    """Đọc file Sự Thật Cứng (brand_facts.json) để AI không bao giờ bịa sai tên hãng hay % chiết khấu."""
+    for candidate in [BASE_DIR / "data" / "brand_facts.json", Path("E:/ANTIGRAVITY/a-thanh-bn/data/brand_facts.json")]:
+        if candidate.exists():
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning(f"Lỗi đọc brand_facts.json: {e}")
+    return {}
+
+def _sync_history_to_github_bg(data: dict):
+    """Đẩy lịch sử bài viết & ảnh lên GitHub bất đồng bộ để Render không bị mất trí nhớ khi restart."""
+    if not GITHUB_TOKEN:
+        return
+    try:
+        import base64
+        import requests
+        url = "https://api.github.com/repos/itanle951-rgb/itan-telegram-bot/contents/data/publish_history.json"
+        headers = {
+            "Authorization": f"token {GITHUB_TOKEN}",
+            "User-Agent": "Hermes-Memory-Sync",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        cur = requests.get(url, headers=headers, timeout=8)
+        sha = cur.json().get("sha") if cur.status_code == 200 else None
+        payload = {
+            "message": "chore(memory): auto-sync publish_history.json",
+            "content": base64.b64encode(json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")).decode("utf-8"),
+            "branch": "main"
+        }
+        if sha:
+            payload["sha"] = sha
+        requests.put(url, json=payload, headers=headers, timeout=10)
+    except Exception as e:
+        logger.warning(f"Sync publish_history lên GitHub thất bại (không ảnh hưởng luồng chính): {e}")
+
 def load_publish_history() -> dict:
     if PUBLISH_HISTORY_FILE.exists():
         try:
@@ -332,23 +370,44 @@ def load_publish_history() -> dict:
                     return data
         except Exception:
             pass
+    # Nếu /tmp bị xóa do Render restart -> kéo lại trí nhớ bền vững từ GitHub
+    try:
+        import requests
+        raw_url = "https://raw.githubusercontent.com/itanle951-rgb/itan-telegram-bot/main/data/publish_history.json"
+        resp = requests.get(raw_url, timeout=6)
+        if resp.status_code == 200:
+            data = resp.json()
+            if isinstance(data, dict):
+                data.setdefault("recent_titles", [])
+                data.setdefault("recent_photos", [])
+                with open(PUBLISH_HISTORY_FILE, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                return data
+    except Exception:
+        pass
     return {"recent_titles": [], "recent_photos": []}
 
 def record_publish_history(title: str = None, photo_url: str = None):
     data = load_publish_history()
+    changed = False
     if title:
         titles = [t for t in data.get("recent_titles", []) if t != title]
         titles.append(title)
         data["recent_titles"] = titles[-30:]
+        changed = True
     if photo_url:
         photos = [u for u in data.get("recent_photos", []) if u != photo_url]
         photos.append(photo_url)
         data["recent_photos"] = photos[-15:]
+        changed = True
     try:
         with open(PUBLISH_HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.warning(f"Không thể lưu publish history: {e}")
+    if changed:
+        import threading
+        threading.Thread(target=_sync_history_to_github_bg, args=(data,), daemon=True).start()
 
 def fetch_existing_titles_from_github(repo_name: str = "thietbidien-bacninh") -> list[str]:
     titles = []
@@ -394,12 +453,13 @@ def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
         site_url = "http://thietbidien-bacninh.com"
         repo_name = "thietbidien-bacninh"
         author_name = "A Thành BN"
+        facts = load_brand_facts()
+        brands_str = ", ".join(facts.get("official_brands", ["Brenna", "Vanni", "Goneo", "Trần Phú", "Cadisun", "Rạng Đông", "LS", "Schneider", "Panasonic"]))
+        policy_rule = facts.get("pricing_policy", {}).get("rule", "Tuyệt đối KHÔNG công khai phần trăm (%) chiết khấu.")
         prompt_ctx = (
-            "Website A Thành — Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). "
-            "Chuyên dây cáp Cadisun (tem QR chống hàng giả 100%), dây Trần Phú, Cadivi, công tắc ổ cắm Brenna (viền nhôm cao cấp), "
-            "Vanni, Goneo, Panasonic, Schneider, đèn LED Rạng Đông và thiết bị đóng cắt LS. "
-            "QUY TẮC BẮT BUỘC: Tuyệt đối KHÔNG công khai phần trăm (%) chiết khấu trong bài viết (không ghi 5-15%, 20-25% hay 30-35%). "
-            "Chỉ nhấn mạnh chính sách giá ưu đãi theo số lượng hàng hóa đặt mua và hỗ trợ kỹ thuật. Tác giả bài viết là Kỹ sư A Thành."
+            f"Website A Thành — {facts.get('store_name', 'Tổng Kho Thiết Bị Điện Duy Phong')} ({facts.get('address', '549 Ngô Gia Tự, TP. Bắc Ninh')}, Hotline: {' / '.join(facts.get('hotlines', ['0904.511.227']))}). "
+            f"Thương hiệu chính thức: {brands_str}. (CHÚ Ý: viết đúng tên 'Brenna', tuyệt đối không viết sai thành Bretina/Brentina). "
+            f"QUY TẮC BẮT BUỘC: {policy_rule} Tác giả bài viết là {facts.get('author', 'Kỹ sư A Thành')}."
         )
     else:
         site_name = "Hoàng Thịnh Logistics"
@@ -891,44 +951,32 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str, hi
         return False
 
 def generate_image_sync(prompt: str) -> tuple[str, str]:
-    """Tạo ảnh AI từ AI Horde hoặc Fallback Pillow Banner."""
+    """Tạo ảnh AI siêu tốc qua Pollinations.ai (0 VNĐ) hoặc Fallback Pillow Luxury Banner."""
     import requests
+    import urllib.parse
     os.makedirs("/tmp/images", exist_ok=True)
     out_path = f"/tmp/images/img_{int(time.time())}.jpg"
-    
-    # Prompt nâng cấp phong cách Luxury
+
     luxury_prompt = (
-        f"{prompt}, commercial luxury photography, obsidian black background (#0B0F17), "
-        f"royal gold rim lighting (#D4AF37), dramatic studio lighting, 8k resolution, photorealistic"
+        f"{prompt}, commercial luxury product photography, obsidian dark background, "
+        f"royal gold rim lighting, dramatic studio lighting, photorealistic, high contrast"
     )
-    
-    # Thử qua AI Horde GPU phân tán miễn phí
+
     success = False
     try:
-        headers = {"apikey": "0000000000", "Client-Agent": "HermesAgent:1.0:test", "Content-Type": "application/json"}
-        payload = {
-            "prompt": luxury_prompt,
-            "params": {"steps": 25, "width": 512, "height": 512, "sampler_name": "k_euler", "cfg_scale": 7.5}
-        }
-        res = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=12)
-        if res.status_code == 202:
-            job_id = res.json().get("id")
-            for _ in range(10): # Đợi tối đa 25s
-                time.sleep(2.5)
-                st = requests.get(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=10)
-                if st.status_code == 200 and st.json().get("done"):
-                    gens = st.json().get("generations", [])
-                    if gens:
-                        img_bytes = requests.get(gens[0].get("img"), timeout=15).content
-                        with open(out_path, "wb") as f:
-                            f.write(img_bytes)
-                        success = True
-                        break
+        encoded = urllib.parse.quote(luxury_prompt)
+        pollinations_url = f"https://image.pollinations.ai/prompt/{encoded}?width=1200&height=675&nologo=true&seed={int(time.time()) % 100000}"
+        res = requests.get(pollinations_url, timeout=20, headers={"User-Agent": "Hermes-Agent/2.0"})
+        if res.status_code == 200 and len(res.content) > 8000 and res.headers.get("content-type", "").startswith("image"):
+            with open(out_path, "wb") as f:
+                f.write(res.content)
+            success = True
+            logger.info("✓ Đã tạo ảnh AI nhanh qua Pollinations.ai")
     except Exception as e:
-        logger.warning(f"AI Horde timeout/error: {e}")
+        logger.warning(f"Pollinations.ai timeout/error ({e}), chuyển sang Luxury Graphic Banner.")
 
     if not success or not os.path.exists(out_path):
-        create_luxury_graphic_banner("ẤN PHẨM THƯƠNG HIỆU LUXURY", prompt, out_path)
+        create_luxury_graphic_banner("ẤN PHẨM THƯƠNG HIỆU DUY PHONG", prompt, out_path)
 
     caption = (
         f"🎨 **TÁC PHẨM THIẾT KẾ AI THEO LỆNH CHỦ TỊCH TÂN**\n\n"
@@ -1603,6 +1651,13 @@ async def lifespan(app: FastAPI):
 api = FastAPI(title="Itan Telegram Bot 24/7", lifespan=lifespan)
 app = api  # Hỗ trợ cả 2 chuẩn gọi: app:app hoặc app:api
 
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
+
 @api.get("/", response_class=HTMLResponse)
 async def dashboard():
     uptime_sec = int(time.time() - START_TIME)
@@ -1844,6 +1899,51 @@ async def get_briefing_status():
         "held_items_count": len(state.get("held_items", [])),
         "architecture": "Anthropic Reliable Agent Automations (Martin & Avilla)"
     })
+
+
+@api.post("/api/lead")
+async def receive_website_lead(request: Request):
+    """Nhận đơn yêu cầu báo giá BOQ / Lead từ Website thietbidien-bacninh.com và bắn thẳng về Telegram."""
+    try:
+        payload = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
+
+    name = str(payload.get("customerName") or "Khách hàng").strip()
+    phone = str(payload.get("customerPhone") or "").strip()
+    ctype = str(payload.get("customerType") or "Khách xây nhà").strip()
+    address = str(payload.get("projectAddress") or "Bắc Ninh").strip()
+    notes = str(payload.get("notes") or "").strip()
+    items = payload.get("items") or []
+    subtotal = payload.get("subtotalListed") or 0
+
+    if not phone:
+        return JSONResponse(status_code=400, content={"error": "Missing phone"})
+
+    lines = [
+        "🔔 **CÓ ĐƠN BÁO GIÁ MỚI TỪ WEBSITE DUY PHONG!**",
+        f"👤 **Khách hàng:** {name} ({ctype})",
+        f"📞 **SĐT / Zalo:** `{phone}`",
+        f"📍 **Công trình:** {address}",
+        f"📦 **Số đầu mục:** {len(items)} món | **Tạm tính Catalog:** {int(subtotal):,} đ".replace(",", "."),
+    ]
+    if items:
+        lines.append("📝 **Một số vật tư chính:**")
+        for it in items[:6]:
+            lines.append(f"  • {it.get('name', 'Vật tư')} — SL: {it.get('qty', 1)} {it.get('unit', '')}")
+        if len(items) > 6:
+            lines.append(f"  _...và {len(items) - 6} đầu mục khác_")
+    if notes:
+        lines.append(f"💬 **Ghi chú:** {notes}")
+
+    msg_text = "\n".join(lines)
+    if bot_application and bot_application.bot:
+        try:
+            await bot_application.bot.send_message(chat_id=7574870612, text=msg_text, parse_mode="Markdown")
+        except Exception as e:
+            logger.warning(f"Lỗi gửi lead về Telegram: {e}")
+
+    return JSONResponse(content={"status": "received", "items_count": len(items)})
 
 @api.get("/ping")
 @api.get("/healthz")
