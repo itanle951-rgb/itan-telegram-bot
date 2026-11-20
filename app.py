@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import random
 import asyncio
 import logging
 import json
@@ -292,6 +293,92 @@ def normalize_target_site(web_input: str) -> str:
         return "1689"
     return "athanh"
 
+PUBLISH_HISTORY_FILE = Path("/tmp/bot_publish_history.json")
+
+ATHANH_TOPICS_POOL = [
+    "Cách chọn tiết diện dây cáp điện Trần Phú cho điều hòa, bếp từ và bình nóng lạnh",
+    "So sánh công tắc ổ cắm viền nhôm Brenna và mặt nhựa Panasonic cho nhà phố hiện đại",
+    "Hướng dẫn bố trí Aptomat tổng 63A và át nhánh RCBO chống giật cho nhà 6 tầng 90m2",
+    "Cách kiểm tra dây cáp điện Cadisun chính hãng bằng mã QR và soi lõi đồng 99.99%",
+    "Chọn đèn LED âm trần Rạng Đông 110/12W ánh sáng trắng hay đổi màu cho phòng khách",
+    "Kinh nghiệm đi ống ghen SP 20 Sino âm tường chống chuột cắn và dễ rút dây bảo trì",
+    "Bóc tách khối lượng ổ cắm, mặt 2 lỗ và hạt công tắc 2 chiều cho nhà phố nhiều tầng",
+    "Giải pháp chiếu sáng nhà xưởng KCN Quế Võ - Yên Phong với đèn Highbay LED 150W",
+    "Vì sao cần lắp hạt đèn báo và át khối 30A riêng cho bình nóng lạnh phòng tắm",
+    "Kinh nghiệm chọn vỏ tủ điện và khởi động từ LS cho xưởng sản xuất vừa và nhỏ",
+    "Sai lầm phổ biến khi chọn dây dẫn 1.5mm2 và 2.5mm2 gây quá tải sụt áp trong nhà ở",
+    "Cách phối hợp đèn ốp tường 10W Rạng Đông cho hành lang, cầu thang và ban công",
+    "Tiêu chuẩn chọn ổ cắm 2 chấu và 3 chấu an toàn cho phòng bếp và khu vực ẩm ướt",
+    "Quy trình nghiệm thu hệ thống điện âm tường trước khi trát tường cho chủ nhà Bắc Ninh",
+    "Kinh nghiệm dự trù vật tư điện hoàn thiện tránh phát sinh và dư thừa cuối công trình"
+]
+
+CONTENT_ANGLES = [
+    "Checklist kiểm tra thực tế từng bước cho thợ điện & chủ nhà",
+    "Phân tích lỗi thi công thường gặp và cách khắc phục triệt để",
+    "So sánh thông số kỹ thuật và tư vấn chọn đúng nhu cầu sử dụng",
+    "Hướng dẫn bóc tách khối lượng thực tế và tối ưu chi phí công trình",
+    "Chia sẻ kinh nghiệm thực chiến từ công trình đã bàn giao tại Bắc Ninh"
+]
+
+def load_publish_history() -> dict:
+    if PUBLISH_HISTORY_FILE.exists():
+        try:
+            with open(PUBLISH_HISTORY_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    data.setdefault("recent_titles", [])
+                    data.setdefault("recent_photos", [])
+                    return data
+        except Exception:
+            pass
+    return {"recent_titles": [], "recent_photos": []}
+
+def record_publish_history(title: str = None, photo_url: str = None):
+    data = load_publish_history()
+    if title:
+        titles = [t for t in data.get("recent_titles", []) if t != title]
+        titles.append(title)
+        data["recent_titles"] = titles[-30:]
+    if photo_url:
+        photos = [u for u in data.get("recent_photos", []) if u != photo_url]
+        photos.append(photo_url)
+        data["recent_photos"] = photos[-15:]
+    try:
+        with open(PUBLISH_HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.warning(f"Không thể lưu publish history: {e}")
+
+def fetch_existing_titles_from_github(repo_name: str = "thietbidien-bacninh") -> list[str]:
+    titles = []
+    try:
+        import requests
+        raw_url = f"https://raw.githubusercontent.com/itanle951-rgb/{repo_name}/main/js/app.js"
+        resp = requests.get(raw_url, timeout=6)
+        if resp.status_code == 200:
+            found = re.findall(r'"title"\s*:\s*"([^"]+)"', resp.text)
+            titles.extend(found[:25])
+    except Exception as e:
+        logger.warning(f"Không thể tải danh sách bài viết từ GitHub: {e}")
+    return titles
+
+def pick_fresh_topic(repo_name: str = "thietbidien-bacninh") -> str:
+    hist = load_publish_history()
+    used = set(t.lower() for t in hist.get("recent_titles", []))
+    for d in PENDING_DRAFTS.values():
+        if d.get("topic"):
+            used.add(d["topic"].lower())
+        if d.get("article", {}).get("title"):
+            used.add(d["article"]["title"].lower())
+    for gt in fetch_existing_titles_from_github(repo_name):
+        used.add(gt.lower())
+
+    fresh = [t for t in ATHANH_TOPICS_POOL if not any(word in u for u in used for word in [t[:25].lower()])]
+    if not fresh:
+        fresh = ATHANH_TOPICS_POOL
+    return random.choice(fresh)
+
 def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
     """Soạn thảo bài viết chuẩn SEO và thiết kế banner Luxury, lưu vào hàng chờ duyệt (Approval Boundary)."""
     import base64
@@ -309,9 +396,10 @@ def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
         author_name = "A Thành BN"
         prompt_ctx = (
             "Website A Thành — Tổng Kho Thiết Bị Điện Duy Phong Bắc Ninh (549 Ngô Gia Tự, TP. Bắc Ninh, Hotline: 0904.511.227). "
-            "Chuyên dây cáp Cadisun (chiết khấu thợ thầu 5% - 15% theo khối lượng, tem QR chống hàng giả 100%), "
-            "dây Trần Phú (20% - 25%), Panasonic, Schneider. "
-            "QUY TẮC BẮT BUỘC: Tuyệt đối KHÔNG ghi chiết khấu 30-35% cho Cadisun. Tác giả bài viết là Kỹ sư A Thành."
+            "Chuyên dây cáp Cadisun (tem QR chống hàng giả 100%), dây Trần Phú, Cadivi, công tắc ổ cắm Brenna (viền nhôm cao cấp), "
+            "Vanni, Goneo, Panasonic, Schneider, đèn LED Rạng Đông và thiết bị đóng cắt LS. "
+            "QUY TẮC BẮT BUỘC: Tuyệt đối KHÔNG công khai phần trăm (%) chiết khấu trong bài viết (không ghi 5-15%, 20-25% hay 30-35%). "
+            "Chỉ nhấn mạnh chính sách giá ưu đãi theo số lượng hàng hóa đặt mua và hỗ trợ kỹ thuật. Tác giả bài viết là Kỹ sư A Thành."
         )
     else:
         site_name = "Hoàng Thịnh Logistics"
@@ -320,16 +408,40 @@ def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
         author_name = "Lê Minh Tân"
         prompt_ctx = "Hoàng Thịnh Logistics (Kho 19/785 Nguyễn Khoái, Hoàng Mai, Hà Nội. Hotline: 0968 599 951). Chuyên vận chuyển 1688, Taobao chính ngạch 3-5 ngày về Hà Nội."
 
+    if not topic or not topic.strip():
+        topic = pick_fresh_topic(repo_name)
+
+    # Thu thập danh sách bài đã đăng để tránh Gemini viết trùng
+    hist = load_publish_history()
+    avoid_titles = list(dict.fromkeys(
+        fetch_existing_titles_from_github(repo_name)
+        + hist.get("recent_titles", [])
+        + [d.get("article", {}).get("title", "") for d in PENDING_DRAFTS.values()]
+    ))
+    avoid_titles = [t for t in avoid_titles if t][:15]
+    avoid_block = "\n".join(f"- {t}" for t in avoid_titles) if avoid_titles else "(Chưa có)"
+    angle = random.choice(CONTENT_ANGLES)
+
     # 1. Viết bài với Gemini AI
     article = None
     system_inst = f"""
     Bạn là Kỹ sư Trưởng & Chuyên gia Content SEO. Ngữ cảnh: {prompt_ctx}
-    Viết 1 bài viết chuẩn SEO chuyên sâu, văn phong chuyên nghiệp, thực tế. Trả về JSON chuẩn:
+    Góc độ triển khai BẮT BUỘC cho bài này: {angle}.
+
+    DANH SÁCH BÀI ĐÃ ĐĂNG (TUYỆT ĐỐI KHÔNG VIẾT TRÙNG TIÊU ĐỀ, KHÔNG LẶP LẠI Ý TƯỞNG CŨ):
+    {avoid_block}
+
+    Viết 1 bài viết chuẩn SEO chuyên sâu, mới mẻ, văn phong thực tế cho thợ điện & chủ nhà. Trả về JSON chuẩn:
     {{
-      "title": "Tiêu đề chuẩn SEO hấp dẫn dài 60-80 ký tự",
+      "title": "Tiêu đề mới lạ, khác biệt hoàn toàn các bài đã đăng, dài 55-80 ký tự",
       "category": "Tên chuyên mục",
       "summary": "Đoạn sapo lôi cuốn 2-3 câu",
-      "content_html": "Nội dung chi tiết thẻ HTML <h3>, <p>, <ul>, <li>, <strong>, bảng thông số, lời khuyên thực tế và kết bài liên hệ Hotline 0904.511.227",
+      "banner_highlights": [
+        "Điểm nhấn 1 ngắn gọn dưới 58 ký tự sát nội dung bài",
+        "Điểm nhấn 2 ngắn gọn dưới 58 ký tự sát nội dung bài",
+        "Điểm nhấn 3 ngắn gọn dưới 58 ký tự (không ghi % chiết khấu)"
+      ],
+      "content_html": "Nội dung chi tiết thẻ HTML <h3>, <p>, <ul>, <li>, <strong>, số liệu kỹ thuật thực tế và kết bài liên hệ Hotline 0904.511.227",
       "image_prompt": "Prompt tiếng Anh chi tiết để tạo ảnh Luxury Black and Gold cho bài viết này"
     }}
     """
@@ -338,7 +450,7 @@ def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
             resp = client.models.generate_content(
                 model=m,
                 contents=f"{system_inst}\n\nChủ đề bài viết: {topic}",
-                config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.7)
+                config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.88)
             )
             article = json.loads(resp.text)
             break
@@ -347,18 +459,29 @@ def prepare_publish_draft_sync(topic: str, website: str = "athanh") -> dict:
 
     if not article:
         article = {
-            "title": f"Kinh nghiệm chọn thiết bị điện chính hãng: {topic}",
+            "title": f"{topic} ({time.strftime('%d/%m')})",
             "category": "Kinh Nghiệm Thực Tế",
-            "summary": f"Phân tích chuyên sâu về {topic} giúp tiết kiệm chi phí công trình và đảm bảo an toàn tuyệt đối.",
-            "content_html": f"<h3>1. Giới thiệu giải pháp {topic}</h3><p>Lựa chọn vật tư điện đúng chuẩn chất lượng mang lại độ bền vượt trội cho công trình tại Bắc Ninh.</p><h3>2. Lời khuyên từ Kỹ sư A Thành</h3><p>Luôn yêu cầu đầy đủ CO/CQ và quét mã QR xác thực chính hãng tại Tổng Kho Duy Phong (549 Ngô Gia Tự, Hotline: 0904.511.227).</p>",
+            "summary": f"Phân tích chuyên sâu về {topic} theo góc nhìn kỹ thuật thi công thực tế tại Bắc Ninh.",
+            "banner_highlights": [
+                f"Giải pháp thực tế: {topic[:45]}",
+                "100% hàng chính hãng đầy đủ hóa đơn & CO/CQ",
+                "Tư vấn bóc tách vật tư chuẩn theo m2 sàn"
+            ],
+            "content_html": f"<h3>1. Phân tích giải pháp: {topic}</h3><p>Lựa chọn vật tư điện đúng chuẩn kỹ thuật mang lại độ bền và an toàn vượt trội cho công trình tại Bắc Ninh.</p><h3>2. Lời khuyên từ Kỹ sư A Thành</h3><p>Luôn kiểm tra kỹ tem nhãn chính hãng và liên hệ Tổng Kho Duy Phong (549 Ngô Gia Tự, Hotline: 0904.511.227) để được tư vấn theo khối lượng thực tế.</p>",
             "image_prompt": f"Luxury black and gold illustration of {topic}, cinematic 8k"
         }
 
-    # 2. Tạo ảnh Luxury Banner
+    # 2. Tạo ảnh Luxury Banner (chống trùng ảnh nền & chữ riêng theo bài)
     slug = create_slug_url(article["title"])
     os.makedirs("/tmp/web_images", exist_ok=True)
-    img_path = f"/tmp/web_images/{slug}.jpg"
-    create_luxury_graphic_banner(article["title"], topic, img_path)
+    img_path = f"/tmp/web_images/{slug}_{int(time.time()) % 10000}.jpg"
+    create_luxury_graphic_banner(
+        article["title"],
+        topic,
+        img_path,
+        highlights=article.get("banner_highlights")
+    )
+    record_publish_history(title=article["title"])
 
     # 3. Lưu vào danh sách chờ phê duyệt (Approval Boundary)
     draft_id = f"pub_{int(time.time())}"
@@ -549,42 +672,67 @@ def wrap_render_lines(text, font, max_width, draw):
         lines.append(' '.join(current_line))
     return lines
 
-def find_best_photo_from_library(query: str) -> tuple[str, str]:
-    """Tìm ảnh thực tế phù hợp nhất từ photo_library.json của Website A Thành.
+def find_best_photo_from_library(query: str, exclude_urls: list[str] = None) -> tuple[str, str]:
+    """Tìm ảnh thực tế phù hợp từ photo_library.json và TỰ ĐỘNG XOAY VÒNG chống trùng lặp.
     Trả về (image_url, category_name)
     """
-    query_lower = query.lower()
+    query_lower = (query or "").lower()
     lib_path = BASE_DIR / "data" / "photo_library.json"
     if not lib_path.exists():
         lib_path = Path("E:/ANTIGRAVITY/a-thanh-bn/data/photo_library.json")
-    
+
+    recent_used = set(exclude_urls or [])
+    if not recent_used:
+        hist = load_publish_history()
+        recent_used = set(hist.get("recent_photos", [])[-12:])
+
     if lib_path.exists():
         try:
             with open(lib_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             photos = data.get("photos", [])
-            best_match = None
-            max_score = 0
-            for p in photos:
-                score = sum(1 for kw in p.get("keywords", []) if kw in query_lower)
-                if score > max_score:
-                    max_score = score
-                    best_match = p
-            if best_match:
-                return best_match.get("raw_url"), best_match.get("category", "Kỹ Thuật Điện Bắc Ninh")
+            if photos:
+                scored = []
+                for p in photos:
+                    url = p.get("raw_url", "")
+                    score = sum(1 for kw in p.get("keywords", []) if kw.lower() in query_lower)
+                    cat = (p.get("category") or "").lower()
+                    if cat and any(w in query_lower for w in cat.split()):
+                        score += 1
+                    scored.append((score, url in recent_used, p))
+
+                # Ưu tiên các ảnh CHƯA DÙNG gần đây
+                fresh = [item for item in scored if not item[1]]
+                pool = fresh if fresh else scored
+
+                max_score = max(item[0] for item in pool)
+                if max_score > 0:
+                    # Lấy nhóm top candidates có điểm sát nhau để xoay vòng tự nhiên
+                    top_candidates = [item[2] for item in pool if item[0] >= max(1, max_score - 1)]
+                else:
+                    # Không khớp từ khóa mạnh -> chọn ngẫu nhiên trong các ảnh mới chưa dùng
+                    top_candidates = [item[2] for item in pool]
+
+                chosen = random.choice(top_candidates)
+                chosen_url = chosen.get("raw_url")
+                record_publish_history(photo_url=chosen_url)
+                return chosen_url, chosen.get("category", "Kỹ Thuật Điện Bắc Ninh")
         except Exception as e:
             logger.warning(f"Lỗi đọc photo_library.json: {e}")
-            
-    # Mặc định ảnh kho dây cáp thiết bị Duy Phong
-    return "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg", "Tổng Kho Duy Phong"
 
-def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
-    """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) lấy ảnh nền từ Thư Viện Ảnh A Thành."""
+    # Mặc định ảnh kho dây cáp thiết bị Duy Phong
+    fallback_url = "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg"
+    record_publish_history(photo_url=fallback_url)
+    return fallback_url, "Tổng Kho Duy Phong"
+
+def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str, highlights: list[str] = None):
+    """Tạo banner đồ họa Luxury Black & Gold (#0B0F17 & #D4AF37) lấy ảnh nền từ Thư Viện Ảnh A Thành (có xoay vòng layout)."""
     try:
         from PIL import Image, ImageDraw, ImageEnhance
         width, height = 1200, 675
-        
-        # 1. Tải ảnh thực tế từ Kho Ảnh Riêng Biệt của Website A Thành (photo_library.json)
+        variant_idx = random.randint(0, 2)
+
+        # 1. Tải ảnh thực tế từ Kho Ảnh Riêng Biệt của Website A Thành (có chống trùng ảnh)
         base = None
         matched_url, matched_cat = find_best_photo_from_library(f"{title} {subtitle}")
         try:
@@ -594,7 +742,7 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
                 from io import BytesIO
                 base = Image.open(BytesIO(resp.read())).convert("RGBA")
                 base = base.resize((width, height), Image.Resampling.LANCZOS)
-                logger.info(f"✓ Đã nạp ảnh nền thực tế từ kho ảnh A Thành: {matched_url}")
+                logger.info(f"✓ Đã nạp ảnh nền thực tế (chống trùng): {matched_url}")
         except Exception as e:
             logger.warning(f"Không thể nạp ảnh từ photo_library ({e}), dùng nền màu sang trọng.")
             base = None
@@ -603,25 +751,29 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
             base = Image.new("RGBA", (width, height), (15, 23, 42, 255))
         else:
             enhancer = ImageEnhance.Brightness(base)
-            base = enhancer.enhance(0.36)
+            base = enhancer.enhance(0.38 if variant_idx != 1 else 0.34)
 
-        # 2. Gradient mờ tối Dark Navy huyền bí
+        # 2. Gradient mờ tối Dark Navy / Charcoal theo biến thể
         overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         d_over = ImageDraw.Draw(overlay)
+        base_rgb = [(11, 15, 23), (18, 16, 14), (10, 18, 28)][variant_idx]
         for x in range(width):
-            alpha = int(140 + (115 * (1 - (x / width) ** 0.8)))
-            d_over.line([(x, 0), (x, height)], fill=(11, 15, 23, alpha))
+            alpha = int(145 + (110 * (1 - (x / width) ** 0.8)))
+            d_over.line([(x, 0), (x, height)], fill=(*base_rgb, alpha))
         for y in range(height):
-            alpha_v = int(60 * (y / height))
-            d_over.line([(0, y), (width, y)], fill=(11, 15, 23, alpha_v))
+            alpha_v = int(55 * (y / height))
+            d_over.line([(0, y), (width, y)], fill=(*base_rgb, alpha_v))
 
         composed = Image.alpha_composite(base, overlay)
         draw = ImageDraw.Draw(composed)
 
-        # 3. Viền đôi mạ vàng Luxury Gold (#D4AF37)
-        gold = (212, 175, 55, 255)
-        gold_light = (243, 229, 171, 255)
-        gold_border = (212, 175, 55, 180)
+        # 3. Viền đôi mạ vàng Luxury Gold (#D4AF37) hoặc Champagne
+        gold_palettes = [
+            ((212, 175, 55, 255), (243, 229, 171, 255), (212, 175, 55, 180)),
+            ((234, 179, 8, 255), (254, 240, 138, 255), (234, 179, 8, 180)),
+            ((196, 154, 69, 255), (245, 230, 196, 255), (196, 154, 69, 180)),
+        ]
+        gold, gold_light, gold_border = gold_palettes[variant_idx]
         white = (255, 255, 255, 255)
         text_muted = (180, 195, 215, 255)
 
@@ -636,7 +788,7 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         cat_text = f"  👑 {matched_cat.upper()}  "
         bbox_cat = draw.textbbox((0, 0), cat_text, font=font_cat)
         badge_w = (bbox_cat[2] - bbox_cat[0]) + 20
-        draw.rounded_rectangle([50, 45, 50 + badge_w, 45 + 36], radius=8, fill=(212, 175, 55, 240))
+        draw.rounded_rectangle([50, 45, 50 + badge_w, 45 + 36], radius=8, fill=(*gold[:3], 240))
         draw.text((60, 52), cat_text, fill=(11, 15, 23, 255), font=font_cat)
 
         brand_sub = "TỔNG KHO THIẾT BỊ ĐIỆN DUY PHONG — BẮC NINH"
@@ -659,41 +811,44 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
 
         # 6. Dải phân cách mạ vàng
         sep_y = start_y + (len(title_lines[:3]) * line_spacing) + 20
-        draw.line([(50, sep_y), (350, sep_y)], fill=gold, width=3)
-        draw.ellipse([348, sep_y - 4, 356, sep_y + 4], fill=gold)
+        sep_w = [350, 460, 280][variant_idx]
+        draw.line([(50, sep_y), (sep_w, sep_y)], fill=gold, width=3)
+        draw.ellipse([sep_w - 2, sep_y - 4, sep_w + 6, sep_y + 4], fill=gold)
 
-        # 7. Box 3 Điểm Nhấn Thực Chiến
+        # 7. Box 3 Điểm Nhấn Thực Chiến (Ưu tiên highlights riêng của từng bài từ AI)
         font_bullet = get_render_font(21)
         bullet_y = sep_y + 25
-        
-        q_all = f"{title} {subtitle}".lower()
-        if "cadisun" in q_all:
-            bullets = [
-                "Chứng nhận CO/CQ & Tem QR chống hàng giả 100%",
-                "Chiết khấu thợ thầu kịch sàn: 5% - 15% theo khối lượng",
-                "Hỗ trợ kỹ thuật đấu nối & giao nhanh tận chân công trình"
-            ]
-        elif "trần phú" in q_all or "tran phu" in q_all:
-            bullets = [
-                "Dây cáp điện Trần Phú chính hãng tem cào phủ QR code",
-                "Chiết khấu đại lý trực tiếp: 20% - 25% tại Tổng Kho",
-                "Đầy đủ chứng từ xuất xưởng & giao miễn phí 15km Bắc Ninh"
-            ]
-        elif any(k in q_all for k in ["aptomat", "rcbo", "mcb", "tủ điện", "chống giật"]):
-            bullets = [
-                "Thiết bị đóng cắt an toàn, ngắt dòng rò tức thì trong 0.03s",
-                "RCBO 30mA bảo vệ chống điện giật tuyệt đối cho gia đình",
-                "Kỹ sư A Thành tư vấn sơ đồ phân tầng tủ điện an toàn"
-            ]
+
+        if highlights and isinstance(highlights, list) and len(highlights) >= 2:
+            bullets = [str(h)[:68] for h in highlights[:3]]
         else:
-            bullets = [
-                f"Chủ đề thực chiến: {subtitle[:65]}",
-                "100% hàng chính hãng đầy đủ hóa đơn VAT & CO/CQ",
-                "Tổng Kho Duy Phong: 549 Ngô Gia Tự, TP. Bắc Ninh"
-            ]
+            q_all = f"{title} {subtitle}".lower()
+            if "cadisun" in q_all:
+                bullets = [
+                    "Chứng nhận CO/CQ & Tem QR chống hàng giả 100%",
+                    "Lõi đồng tinh khiết 99.99%, vỏ PVC chống cháy đạt chuẩn",
+                    "Giá ưu đãi theo khối lượng đơn hàng tại Tổng Kho Duy Phong"
+                ]
+            elif "trần phú" in q_all or "tran phu" in q_all:
+                bullets = [
+                    "Dây cáp điện Trần Phú chính hãng tem cào phủ QR code",
+                    "Đủ tiết diện 1.5mm², 2.5mm², 4.0mm², 6.0mm² chuẩn nhà máy",
+                    "Đầy đủ chứng từ xuất xưởng & giao nhanh tại Bắc Ninh"
+                ]
+            elif any(k in q_all for k in ["aptomat", "rcbo", "mcb", "tủ điện", "chống giật"]):
+                bullets = [
+                    "Thiết bị đóng cắt an toàn, ngắt dòng rò tức thì trong 0.03s",
+                    "RCBO 30mA bảo vệ chống điện giật tuyệt đối cho gia đình",
+                    "Kỹ sư A Thành tư vấn sơ đồ phân tầng tủ điện an toàn"
+                ]
+            else:
+                bullets = [
+                    f"Giải pháp thực tế: {subtitle[:55]}",
+                    "100% hàng chính hãng đầy đủ hóa đơn VAT & CO/CQ",
+                    "Tổng Kho Duy Phong: 549 Ngô Gia Tự, TP. Bắc Ninh"
+                ]
 
         for b in bullets:
-            # Vẽ chấm tròn mạ vàng vector
             draw.ellipse([54, bullet_y + 5, 64, bullet_y + 15], fill=gold)
             draw.text((74, bullet_y + 2), b, fill=(0, 0, 0, 200), font=font_bullet)
             draw.text((72, bullet_y), b, fill=(226, 232, 240, 255), font=font_bullet)
@@ -703,7 +858,7 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         font_footer = get_render_font(20)
         font_hotline = get_render_font(24)
         footer_box_y = height - 90
-        draw.rounded_rectangle([45, footer_box_y, width - 45, footer_box_y + 55], radius=10, fill=(15, 23, 42, 230), outline=(212, 175, 55, 120), width=1)
+        draw.rounded_rectangle([45, footer_box_y, width - 45, footer_box_y + 55], radius=10, fill=(15, 23, 42, 230), outline=(*gold[:3], 120), width=1)
         
         draw.text((65, footer_box_y + 16), "👤 Tác giả: Kỹ sư A Thành (Tổng Kho Duy Phong)", fill=text_muted, font=font_footer)
         hotline = "0904.511.227"
@@ -713,10 +868,6 @@ def create_luxury_graphic_banner(title: str, subtitle: str, output_path: str):
         final_img = composed.convert("RGB")
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         final_img.save(output_path, "JPEG", quality=95)
-        return True
-    except Exception as e:
-        logger.error(f"Lỗi tạo Luxury Graphic Banner: {e}")
-        return False
         return True
     except Exception as e:
         logger.error(f"Lỗi tạo Luxury Graphic Banner: {e}")
@@ -770,7 +921,7 @@ def generate_image_sync(prompt: str) -> tuple[str, str]:
         f"⚡ **BẢNG ĐIỀU HƯỚNG WORKFLOW 1-CHẠM:**\n"
         f"• Gõ **`!quote`** : Tính giá cước vận chuyển 1688 trọn gói.\n"
         f"• Gõ **`!traffic`**: Xuất 3 bài đăng mạng xã hội (FB / Zalo / Threads).\n"
-        f"• Gõ **`boq`**    : Bóc tách chiết khấu cáp Cadisun / Trần Phú 5% - 15%.\n"
+        f"• Gõ **`boq`**    : Bóc tách khối lượng vật tư & báo giá theo số lượng.\n"
         f"• Gõ **`!video`**  : Xuất kịch bản TikTok 22s kèm phụ đề SRT."
     )
     return out_path, caption
@@ -874,7 +1025,7 @@ async def handle_publish_command(update: Update, context: ContextTypes.DEFAULT_T
         website = "logistics"
 
     if not topic:
-        topic = "Kinh nghiệm chọn thiết bị điện cao cấp cho biệt thự và nhà phố"
+        topic = pick_fresh_topic("thietbidien-bacninh" if website != "logistics" else "hoangthinh-logistics")
 
     status_msg = await update.message.reply_text(
         f"🎨 *Nhận lệnh Chủ tịch! Đội ngũ Content AI đang tự động:*\n"
@@ -1229,7 +1380,7 @@ async def run_reliable_briefing_pipeline(bot, target_chat_id: int, force: bool =
         },
         {
             "source_id": "business_electrical",
-            "title": "Kho Điện Duy Phong Bắc Ninh: Dây Cadisun 35% sẵn sàng giao hỏa tốc 2h",
+            "title": "Kho Điện Duy Phong Bắc Ninh: Dây cáp Cadisun chính hãng sẵn sàng giao hỏa tốc 2h",
             "details": "Kho 549 Ngô Gia Tự sẵn 465 mã thiết bị công trình cho cai thầu và thợ điện Bắc Ninh.",
             "level": "INFO"
         }
