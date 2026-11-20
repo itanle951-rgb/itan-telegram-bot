@@ -1,0 +1,49 @@
+{
+  "store_name": "Tổng Kho Thiết Bị Điện Cao Cấp Duy Phong",
+  "website": "https://thietbidien-bacninh.com",
+  "address": "549 Ngô Gia Tự, P. Ninh Xá, TP. Bắc Ninh",
+  "hotlines": ["0904.511.227", "0968.599.951"],
+  "author": "Kỹ sư A Thành",
+  "official_brands": [
+    "Brenna",
+    "Vanni",
+    "Goneo",
+    "Trần Phú",
+    "Cadisun",
+    "Cadivi",
+    "Rạng Đông",
+    "LS",
+    "Schneider",
+    "Panasonic",
+    "Sino",
+    "Nanoco"
+  ],
+  "forbidden_spellings": {
+    "Bretina": "Brenna",
+    "Brentina": "Brenna"
+  },
+  "pricing_policy": {
+    "public_discount_allowed": false,
+    "rule": "Tuyệt đối KHÔNG công khai phần trăm (%) chiết khấu (không ghi 5-15%, 15-25%, 20-25% hay 30-35%). Chỉ nhấn mạnh giá ưu đãi theo số lượng hàng hóa mua và chính sách đổi trả hàng nguyên hộp dư sau công trình."
+  },
+  "estimator_baseline": {
+    "reference_house": "Nhà phố 6 tầng x 90m2/tầng = 540m2 sàn",
+    "key_quantities": {
+      "mat_1_lo": 60,
+      "mat_2_lo": 200,
+      "mat_3_lo": 50,
+      "mat_at_khoi": 50,
+      "at_khoi_30a": 50,
+      "hat_ct_1_chieu": 120,
+      "hat_ct_2_chieu": 110,
+      "hat_o_cam_2_chau": 500,
+      "hat_den_bao": 25,
+      "at_2p_25a": 25,
+      "at_2p_32a": 22,
+      "at_2p_63a": 7,
+      "den_mat_trau_12w": 200,
+      "den_op_tuong_10w": 40,
+      "day_tran_phu_cuon": 24
+    }
+  }
+}
