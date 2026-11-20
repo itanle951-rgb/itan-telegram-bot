@@ -3,22 +3,141 @@
   "domain": "http://thietbidien-bacninh.com",
   "github_repo": "https://github.com/itanle951-rgb/thietbidien-bacninh",
   "raw_base_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main",
-  "total_photos": 22,
-  "last_updated": "2026-11-11",
+  "total_photos": 38,
+  "last_updated": "2026-11-20",
   "categories": [
+    "Đèn LED & Chiếu Sáng Rạng Đông",
+    "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
     "Dây Cáp Cadisun Chính Hãng",
-    "Dây Cáp Trần Phú Chính Hãng",
-    "Aptomat & Tủ Điện Chống Giật",
+    "Dây Cáp Trần Phú & Cadivi",
+    "Aptomat & Tủ Điện Công Nghiệp",
     "Ống Luồn Dây & Đế Âm Nanoco",
-    "Thiết Bị Điện & Quạt Panasonic",
+    "Quạt Trần & Quạt Hút Panasonic",
     "Không Gian Kho & Cửa Hàng Thực Tế"
   ],
   "photos": [
     {
+      "id": "img-led-01",
+      "name": "Đèn LED Âm Trần Downlight 110/12W Rạng Đông",
+      "category": "Đèn LED & Chiếu Sáng Rạng Đông",
+      "keywords": ["đèn led", "âm trần", "downlight", "rạng đông", "mắt trâu", "110/12w", "ánh sáng trắng", "đổi màu", "chiếu sáng", "phòng khách", "đèn"],
+      "rel_path": "assets/images/products/den-led-am-tran-downlight.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/den-led-am-tran-downlight.jpg",
+      "description": "Ảnh đèn LED âm trần downlight Rạng Đông 110/12W ánh sáng trắng và đổi màu"
+    },
+    {
+      "id": "img-led-02",
+      "name": "Đèn LED Bán Nguyệt 1.2m Rạng Đông",
+      "category": "Đèn LED & Chiếu Sáng Rạng Đông",
+      "keywords": ["bán nguyệt", "đèn tuýp", "đèn led", "rạng đông", "hành lang", "ốp tường", "ốp trần", "chiếu sáng", "đèn"],
+      "rel_path": "assets/images/products/den-led-ban-nguyet-rang-dong.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/den-led-ban-nguyet-rang-dong.jpg",
+      "description": "Ảnh đèn LED bán nguyệt 1.2m Rạng Đông siêu sáng tiết kiệm điện"
+    },
+    {
+      "id": "img-led-03",
+      "name": "Đèn LED Highbay 150W Nhà Xưởng MPE",
+      "category": "Đèn LED & Chiếu Sáng Rạng Đông",
+      "keywords": ["highbay", "nhà xưởng", "đèn xưởng", "150w", "kcn", "chiếu sáng", "đèn led", "đèn"],
+      "rel_path": "assets/images/products/den-highbay-mpe.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/den-highbay-mpe.jpg",
+      "description": "Ảnh đèn LED Highbay 150W chuyên dụng chiếu sáng nhà xưởng KCN Quế Võ, Yên Phong"
+    },
+    {
+      "id": "img-brenna-01",
+      "name": "Bộ Công Tắc Brenna Viền Nhôm Vàng Champagne",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["brenna", "công tắc", "viền nhôm", "vàng champagne", "hạt công tắc", "2 chiều", "1 chiều", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/cong-tac-brenna-vang.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-brenna-vang.jpg",
+      "description": "Ảnh bộ công tắc cao cấp Brenna mặt nhôm phay xước màu vàng Champagne"
+    },
+    {
+      "id": "img-brenna-02",
+      "name": "Bộ Công Tắc Brenna Mặt Xám Titan",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["brenna", "công tắc", "xám titan", "viền nhôm", "mặt 2 lỗ", "mặt 3 lỗ", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/cong-tac-brenna-xam.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-brenna-xam.jpg",
+      "description": "Ảnh bộ công tắc Brenna mặt xám Titan sang trọng cho nhà phố hiện đại"
+    },
+    {
+      "id": "img-brenna-03",
+      "name": "Bộ Ổ Cắm Đôi 3 Chấu Brenna Vàng Champagne",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["brenna", "ổ cắm", "3 chấu", "2 chấu", "ổ đôi", "hạt ổ cắm", "phòng bếp", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/o-cam-brenna-vang.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/o-cam-brenna-vang.jpg",
+      "description": "Ảnh bộ ổ cắm đôi 3 chấu đa năng Brenna mặt vàng Champagne"
+    },
+    {
+      "id": "img-brenna-04",
+      "name": "Bộ Hạt Mạng LAN + Tivi Brenna Mặt Kim Loại",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["brenna", "hạt mạng", "lan", "tivi", "ổ mạng", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/hat-mang-brenna.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/hat-mang-brenna.jpg",
+      "description": "Ảnh mặt hạt mạng LAN Cat6 và cổng Tivi Brenna mặt kim loại"
+    },
+    {
+      "id": "img-vanni-01",
+      "name": "Bộ Công Tắc Vanni Mặt Phẳng Hiện Đại",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["vanni", "công tắc", "mặt phẳng", "hạt công tắc", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/cong-tac-vanni.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-vanni.jpg",
+      "description": "Ảnh bộ công tắc Vanni mặt vuông phẳng tối giản hiện đại"
+    },
+    {
+      "id": "img-vanni-02",
+      "name": "Bộ Ổ Cắm Đôi Vanni Chính Hãng",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["vanni", "ổ cắm", "ổ đôi", "2 chấu", "3 chấu", "hạt ổ cắm", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/o-cam-vanni.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/o-cam-vanni.jpg",
+      "description": "Ảnh bộ ổ cắm đôi Vanni chân đồng đàn hồi cao"
+    },
+    {
+      "id": "img-vanni-03",
+      "name": "Công Tắc Bình Nóng Lạnh Vanni Có Đèn Báo",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["vanni", "nóng lạnh", "đèn báo", "hạt đèn báo", "át khối", "phòng tắm", "20a"],
+      "rel_path": "assets/images/products/cong-tac-nong-lanh-vanni.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-nong-lanh-vanni.jpg",
+      "description": "Ảnh công tắc 2 cực 20A có đèn báo cho bình nóng lạnh Vanni"
+    },
+    {
+      "id": "img-pana-01",
+      "name": "Bộ Công Tắc Panasonic Dòng Wide",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["panasonic", "wide", "công tắc", "mặt nhựa", "hạt công tắc", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/cong-tac-panasonic-wide.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-panasonic-wide.jpg",
+      "description": "Ảnh bộ công tắc Panasonic dòng Wide bền bỉ phổ thông"
+    },
+    {
+      "id": "img-pana-02",
+      "name": "Bộ Ổ Cắm Đôi Panasonic Wide Có Màn Che",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["panasonic", "wide", "ổ cắm", "ổ đôi", "2 chấu", "3 chấu", "công tắc ổ cắm"],
+      "rel_path": "assets/images/products/o-cam-doi-panasonic-wide.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/o-cam-doi-panasonic-wide.jpg",
+      "description": "Ảnh bộ ổ cắm đôi Panasonic Wide an toàn có màn che trẻ em"
+    },
+    {
+      "id": "img-pana-03",
+      "name": "Công Tắc Nóng Lạnh Panasonic 20A Có Đèn Báo",
+      "category": "Công Tắc & Ổ Cắm Brenna / Vanni / Pana",
+      "keywords": ["panasonic", "nóng lạnh", "đèn báo", "hạt đèn báo", "phòng tắm", "bình nóng lạnh"],
+      "rel_path": "assets/images/products/cong-tac-nong-lanh-panasonic.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cong-tac-nong-lanh-panasonic.jpg",
+      "description": "Ảnh công tắc bình nóng lạnh Panasonic 20A có đèn báo an toàn"
+    },
+    {
       "id": "img-cadisun-01",
       "name": "Dây điện đơn Cadisun VCs chính hãng",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["cadisun", "dây đơn", "dây cadisun", "cuộn cadisun", "vcs", "chiết khấu"],
+      "keywords": ["cadisun", "dây đơn", "dây cadisun", "cuộn cadisun", "vcs", "lõi đồng", "mã qr"],
       "rel_path": "assets/images/products/day-don-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-don-cadisun.jpg",
       "description": "Ảnh cuộn dây đơn Cadisun ruột đồng nguyên chất có tem chống hàng giả QR code"
@@ -27,7 +146,7 @@
       "id": "img-cadisun-02",
       "name": "Dây cáp điện đôi Cadisun VCmd",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["cadisun đôi", "dây đôi", "dây dẹp", "vcmd", "cadisun 2x"],
+      "keywords": ["cadisun", "dây đôi", "dây dẹp", "vcmd", "dây cáp"],
       "rel_path": "assets/images/products/day-doi-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-doi-cadisun.jpg",
       "description": "Ảnh cuộn dây điện đôi Cadisun bọc nhựa PVC nguyên sinh chống cháy"
@@ -36,7 +155,7 @@
       "id": "img-cadisun-03",
       "name": "Cáp đồng mềm Cadisun VCmd tròn",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["cáp mềm", "cadisun mềm", "dây tròn", "dây nguồn"],
+      "keywords": ["cáp mềm", "cadisun", "dây tròn", "dây nguồn", "dây cáp"],
       "rel_path": "assets/images/products/cap-mem-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-mem-cadisun.jpg",
       "description": "Ảnh cuộn cáp tròn mềm Cadisun lõi nhiều sợi mềm dẻo"
@@ -45,7 +164,7 @@
       "id": "img-cadisun-04",
       "name": "Cáp điện lực Cu/PVC Cadisun CV",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["cáp lực", "cáp cv", "cáp điện lực", "trục tổng", "cadisun cv"],
+      "keywords": ["cáp lực", "cáp cv", "cáp điện lực", "trục tổng", "cadisun"],
       "rel_path": "assets/images/products/cap-cv-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-cv-cadisun.jpg",
       "description": "Ảnh cuộn cáp điện lực Cadisun CV trục tổng nhà xưởng và công trình"
@@ -54,7 +173,7 @@
       "id": "img-cadisun-05",
       "name": "Cáp ngầm trung và hạ thế Cadisun",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["cáp ngầm", "chôn ngầm", "dsta", "cadisun ngầm", "nhà xưởng", "kcn"],
+      "keywords": ["cáp ngầm", "chôn ngầm", "dsta", "cadisun", "nhà xưởng", "kcn"],
       "rel_path": "assets/images/products/cap-ngam-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-ngam-cadisun.jpg",
       "description": "Ảnh lô cáp ngầm bọc giáp kim loại chống chuột cắn Cadisun cho KCN Quế Võ, Yên Phong"
@@ -63,7 +182,7 @@
       "id": "img-cadisun-06",
       "name": "Cáp 3 pha 4 lõi Cadisun hạ thế",
       "category": "Dây Cáp Cadisun Chính Hãng",
-      "keywords": ["3 pha", "4 lõi", "cáp 3 pha", "điện công nghiệp", "kcn"],
+      "keywords": ["3 pha", "4 lõi", "cáp 3 pha", "cadisun", "công nghiệp", "kcn"],
       "rel_path": "assets/images/products/cap-3pha-4loi-cadisun.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-3pha-4loi-cadisun.jpg",
       "description": "Ảnh cáp điện 3 pha 4 lõi phục vụ tủ điện công nghiệp xưởng sản xuất"
@@ -71,8 +190,8 @@
     {
       "id": "img-tranphu-01",
       "name": "Dây điện đơn Trần Phú chính hãng",
-      "category": "Dây Cáp Trần Phú Chính Hãng",
-      "keywords": ["trần phú", "dây trần phú", "dây đơn trần phú", "vcm trần phú"],
+      "category": "Dây Cáp Trần Phú & Cadivi",
+      "keywords": ["trần phú", "dây trần phú", "dây đơn", "1.5mm", "2.5mm", "4.0mm", "6.0mm", "tiết diện", "dây dẫn", "dây điện"],
       "rel_path": "assets/images/products/day-don-tran-phu.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-don-tran-phu.jpg",
       "description": "Ảnh cuộn dây đơn Trần Phú có tem cào phủ mã an ninh QR code"
@@ -80,26 +199,35 @@
     {
       "id": "img-tranphu-02",
       "name": "Dây cáp điện đôi dẹp Trần Phú",
-      "category": "Dây Cáp Trần Phú Chính Hãng",
-      "keywords": ["trần phú đôi", "dây đôi trần phú", "vcmd trần phú"],
+      "category": "Dây Cáp Trần Phú & Cadivi",
+      "keywords": ["trần phú", "dây đôi", "vcmd", "dây dẫn", "dây điện"],
       "rel_path": "assets/images/products/day-doi-tran-phu.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-doi-tran-phu.jpg",
       "description": "Ảnh dây đôi mềm Trần Phú chuyên đi nổi và đi ống âm tường nhà dân"
     },
     {
       "id": "img-tranphu-03",
-      "name": "Dây mạng mạng Cat6 Trần Phú",
-      "category": "Dây Cáp Trần Phú Chính Hãng",
-      "keywords": ["dây mạng", "cat6", "cáp mạng", "trần phú mạng", "internet"],
+      "name": "Dây mạng Cat6 Trần Phú",
+      "category": "Dây Cáp Trần Phú & Cadivi",
+      "keywords": ["dây mạng", "cat6", "cáp mạng", "trần phú", "internet"],
       "rel_path": "assets/images/products/day-mang-tran-phu.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/day-mang-tran-phu.jpg",
       "description": "Ảnh thùng cáp mạng Cat6 Trần Phú lõi đồng truyền dẫn tín hiệu tốc độ cao"
     },
     {
+      "id": "img-cadivi-01",
+      "name": "Cáp điện lực Cadivi CV chính hãng",
+      "category": "Dây Cáp Trần Phú & Cadivi",
+      "keywords": ["cadivi", "cáp cv", "dây cáp", "cáp trục"],
+      "rel_path": "assets/images/products/cap-cv-cadivi.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/cap-cv-cadivi.jpg",
+      "description": "Ảnh cuộn cáp điện lực Cadivi CV đạt chuẩn TCVN"
+    },
+    {
       "id": "img-schneider-01",
       "name": "Aptomat MCB tép Schneider công nghiệp",
-      "category": "Aptomat & Tủ Điện Chống Giật",
-      "keywords": ["aptomat", "mcb", "schneider", "át tép", "bảo vệ quá tải"],
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["aptomat", "mcb", "schneider", "át tép", "át nhánh", "át cài", "bảo vệ quá tải"],
       "rel_path": "assets/images/products/aptomat-mcb-schneider.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/aptomat-mcb-schneider.jpg",
       "description": "Ảnh thiết bị đóng cắt MCB Schneider độ nhạy cao ngắt ngắn mạch tức thì"
@@ -107,62 +235,71 @@
     {
       "id": "img-schneider-02",
       "name": "Aptomat chống dòng rò RCBO Schneider 30mA",
-      "category": "Aptomat & Tủ Điện Chống Giật",
-      "keywords": ["rcbo", "chống giật", "aptomat chống giật", "bình nóng lạnh", "an toàn điện"],
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["rcbo", "chống giật", "aptomat", "bình nóng lạnh", "át tổng", "an toàn điện"],
       "rel_path": "assets/images/products/aptomat-rcbo-schneider.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/aptomat-rcbo-schneider.jpg",
       "description": "Ảnh Aptomat RCBO chống rò chống giật 30mA tích hợp bảo vệ quá tải cho phòng tắm"
     },
     {
+      "id": "img-ls-01",
+      "name": "Aptomat Khối MCCB LS Công Nghiệp",
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["mccb", "át khối", "aptomat khối", "ls", "63a", "100a", "tổng nhà", "xưởng"],
+      "rel_path": "assets/images/products/aptomat-khoi-mccb-ls.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/aptomat-khoi-mccb-ls.jpg",
+      "description": "Ảnh Aptomat khối MCCB LS dùng cho tủ điện tổng nhà nhiều tầng và xưởng sản xuất"
+    },
+    {
+      "id": "img-ls-02",
+      "name": "Khởi Động Từ Contactor LS 3 Pha",
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["khởi động từ", "contactor", "ls", "3 pha", "xưởng sản xuất", "tủ điện"],
+      "rel_path": "assets/images/products/khoi-dong-tu-contactor-ls.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/khoi-dong-tu-contactor-ls.jpg",
+      "description": "Ảnh Khởi động từ Contactor LS lắp tủ điều khiển động cơ nhà xưởng"
+    },
+    {
       "id": "img-scene-tudien",
       "name": "Hệ thống tủ điện âm tường chống giật gia đình",
-      "category": "Aptomat & Tủ Điện Chống Giật",
-      "keywords": ["tủ điện", "tủ tổng", "lắp tủ điện", "sơ đồ tủ điện", "chống sét"],
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["tủ điện", "tủ tổng", "lắp tủ điện", "sơ đồ tủ điện", "aptomat", "63a", "chống giật"],
       "rel_path": "assets/images/tu-dien-chong-giat-gia-dinh.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/tu-dien-chong-giat-gia-dinh.jpg",
       "description": "Ảnh tủ điện gia đình nhiều tầng đã lắp đặt hoàn thiện phân vùng tải"
     },
     {
+      "id": "img-tudien-02",
+      "name": "Vỏ Tủ Điện Âm Tường Nanoco Chống Cháy",
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["tủ điện", "vỏ tủ", "âm tường", "nanoco", "phân tầng"],
+      "rel_path": "assets/images/products/tu-dien-am-tuong-nanoco.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/tu-dien-am-tuong-nanoco.jpg",
+      "description": "Ảnh vỏ tủ điện âm tường Nanoco cửa mờ sang trọng"
+    },
+    {
+      "id": "img-tudien-03",
+      "name": "Vỏ Tủ Điện Công Nghiệp Sơn Tĩnh Điện",
+      "category": "Aptomat & Tủ Điện Công Nghiệp",
+      "keywords": ["vỏ tủ điện", "tủ công nghiệp", "nhà xưởng", "xưởng sản xuất", "tủ điện"],
+      "rel_path": "assets/images/products/vo-tu-dien-cong-nghiep.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/vo-tu-dien-cong-nghiep.jpg",
+      "description": "Ảnh vỏ tủ điện công nghiệp 600x800 sơn tĩnh điện cho nhà xưởng"
+    },
+    {
       "id": "img-scene-thicong",
       "name": "Thi công điện âm tường nhà phố Bắc Ninh",
       "category": "Ống Luồn Dây & Đế Âm Nanoco",
-      "keywords": ["thi công", "âm tường", "ống luồn", "xây nhà", "nhà phố", "tiết diện"],
+      "keywords": ["thi công", "âm tường", "nghiệm thu", "xây nhà", "nhà phố", "đục tường"],
       "rel_path": "assets/images/thi-cong-dien-am-tuong-nha-pho.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/thi-cong-dien-am-tuong-nha-pho.jpg",
       "description": "Ảnh thực tế công trình đục tường đi ống luồn ruột gà và dây điện chuẩn kỹ thuật"
     },
     {
-      "id": "img-scene-dutoan",
-      "name": "Bảng bóc tách dự toán vật tư điện nhà phố",
-      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
-      "keywords": ["dự toán", "boq", "báo giá", "bảng giá", "vật tư", "chiết khấu"],
-      "rel_path": "assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
-      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
-      "description": "Ảnh hồ sơ bản vẽ thiết kế bóc tách khối lượng vật tư công trình trọn gói"
-    },
-    {
-      "id": "img-scene-kho",
-      "name": "Kho hàng dây cáp điện Duy Phong Bắc Ninh",
-      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
-      "keywords": ["kho", "tổng kho", "kho duy phong", "kho hàng", "dây cáp", "ngô gia tự"],
-      "rel_path": "assets/images/kho-day-cap-thiet-bi.jpg",
-      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg",
-      "description": "Ảnh thực tế bên trong tổng kho Duy Phong xếp hàng trăm cuộn dây Cadisun và Trần Phú"
-    },
-    {
-      "id": "img-scene-cuahang",
-      "name": "Mặt tiền Tổng Kho Duy Phong 549 Ngô Gia Tự",
-      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
-      "keywords": ["cửa hàng", "mặt tiền", "duy phong", "549 ngô gia tự", "bắc ninh", "a thành"],
-      "rel_path": "assets/images/cua-hang-mat-tien.jpg",
-      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/cua-hang-mat-tien.jpg",
-      "description": "Ảnh mặt tiền biển hiệu Tổng Kho Thiết Bị Điện Duy Phong tại 549 Ngô Gia Tự, TP. Bắc Ninh"
-    },
-    {
       "id": "img-nanoco-01",
       "name": "Ống ruột gà chống cháy Nanoco",
       "category": "Ống Luồn Dây & Đế Âm Nanoco",
-      "keywords": ["ống luồn", "ruột gà", "nanoco", "chống cháy", "luồn dây"],
+      "keywords": ["ống luồn", "ruột gà", "nanoco", "chống cháy", "âm tường"],
       "rel_path": "assets/images/products/ong-ruot-ga-nanoco.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/ong-ruot-ga-nanoco.jpg",
       "description": "Ảnh cuộn ống ruột gà đàn hồi chống dập chống cháy Nanoco"
@@ -178,21 +315,57 @@
     },
     {
       "id": "img-nanoco-03",
-      "name": "Ống luồn dây điện PVC thẳng cứng",
+      "name": "Ống luồn dây điện PVC thẳng cứng SP",
       "category": "Ống Luồn Dây & Đế Âm Nanoco",
-      "keywords": ["ống cứng", "ống thẳng", "pvc", "d16", "d20", "chịu lực"],
+      "keywords": ["ống ghen", "ống cứng", "sp 20", "sino", "pvc", "d16", "d20", "chống chuột"],
       "rel_path": "assets/images/products/ong-cung-luon-day-pvc.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/ong-cung-luon-day-pvc.jpg",
-      "description": "Ảnh cây ống cứng PVC luồn dây điện âm sàn bê tông chịu lực cao"
+      "description": "Ảnh cây ống cứng PVC SP 20 luồn dây điện âm tường chống chuột cắn"
     },
     {
       "id": "img-panasonic-01",
       "name": "Quạt trần 5 cánh Panasonic cao cấp",
-      "category": "Thiết Bị Điện & Quạt Panasonic",
-      "keywords": ["quạt trần", "panasonic", "làm mát", "nội thất", "thiết bị điện"],
+      "category": "Quạt Trần & Quạt Hút Panasonic",
+      "keywords": ["quạt trần", "panasonic", "làm mát", "phòng khách", "biệt thự"],
       "rel_path": "assets/images/products/quat-tran-panasonic.jpg",
       "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/quat-tran-panasonic.jpg",
       "description": "Ảnh quạt trần 5 cánh Panasonic điều khiển từ xa cho biệt thự nhà phố"
+    },
+    {
+      "id": "img-panasonic-02",
+      "name": "Quạt Hút Gió Âm Trần Panasonic",
+      "category": "Quạt Trần & Quạt Hút Panasonic",
+      "keywords": ["quạt hút", "thông gió", "panasonic", "phòng tắm", "nhà vệ sinh"],
+      "rel_path": "assets/images/products/quat-hut-panasonic.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/products/quat-hut-panasonic.jpg",
+      "description": "Ảnh quạt hút thông gió âm trần Panasonic vận hành êm ái"
+    },
+    {
+      "id": "img-scene-dutoan",
+      "name": "Bảng bóc tách dự toán vật tư điện nhà phố",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["dự toán", "bóc tách", "boq", "báo giá", "khối lượng", "dự trù"],
+      "rel_path": "assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/du-toan-vat-tu-dien-nha-pho.jpg",
+      "description": "Ảnh hồ sơ bản vẽ thiết kế bóc tách khối lượng vật tư công trình trọn gói"
+    },
+    {
+      "id": "img-scene-kho",
+      "name": "Kho hàng dây cáp điện Duy Phong Bắc Ninh",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["kho", "tổng kho", "kho duy phong", "kho hàng", "ngô gia tự"],
+      "rel_path": "assets/images/kho-day-cap-thiet-bi.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/kho-day-cap-thiet-bi.jpg",
+      "description": "Ảnh thực tế bên trong tổng kho Duy Phong xếp hàng trăm cuộn dây Cadisun và Trần Phú"
+    },
+    {
+      "id": "img-scene-cuahang",
+      "name": "Mặt tiền Tổng Kho Duy Phong 549 Ngô Gia Tự",
+      "category": "Không Gian Kho & Cửa Hàng Thực Tế",
+      "keywords": ["cửa hàng", "mặt tiền", "duy phong", "549 ngô gia tự", "bắc ninh", "a thành"],
+      "rel_path": "assets/images/cua-hang-mat-tien.jpg",
+      "raw_url": "https://raw.githubusercontent.com/itanle951-rgb/thietbidien-bacninh/main/assets/images/cua-hang-mat-tien.jpg",
+      "description": "Ảnh mặt tiền biển hiệu Tổng Kho Thiết Bị Điện Duy Phong tại 549 Ngô Gia Tự, TP. Bắc Ninh"
     }
   ]
 }
